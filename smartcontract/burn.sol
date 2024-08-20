@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "@hashgraph/sdk/contracts/hts-precompile/HederaTokenService.sol";
 import "@hashgraph/sdk/contracts/hts-precompile/IHederaTokenService.sol";
 
+/* This contract is the burn address for the product. The ./backend folder has the product logic implementation using hedera sdk */
+
 contract HederaBurnerContract is HederaTokenService {
     mapping(address => bool) public acceptedTokens;
     address[] private tokenList;
