@@ -54,11 +54,5 @@ contract HederaBurnerContract is HederaTokenService {
         return int64(uint64(balance));
     }
 
-    receive() external payable {
-        revert("This contract does not accept HBAR");
-    }
-
-    fallback() external payable {
-        revert("This contract does not accept HBAR");
-    }
+  
 }
