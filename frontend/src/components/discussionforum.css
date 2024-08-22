@@ -1,0 +1,71 @@
+
+.discussion-container {
+    background-color: #3749E9;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.text-white {
+    color: #ffffff !important;
+}
+
+.text-primary {
+    color: #ffffff !important;
+}
+
+.btn-outline-light {
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.btn-outline-light:hover {
+    background-color: #ffffff;
+    color: #3749E9;
+}
+
+.card {
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.card-body {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.card-subtitle {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.btn {
+    font-size: 0.9rem;
+}
+
+.list-group-item {
+    background-color: #f8f9fa;
+    border-left: 2px solid #3749E9;
+    padding: 10px 15px;
+}
+
+.list-group-item strong {
+    color: #3749E9;
+}
+
+.form-control {
+    border-radius: 0.25rem;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}

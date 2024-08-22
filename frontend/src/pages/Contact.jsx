@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import img from '../assets/images/img-contact.png'
+import Sale01 from '../components/sale/Sale01';
+
+import img from '../assets/images/layout/contact.jpg'
+import PageTitle from '../components/pagetitle';
 
 Contact.propTypes = {
     
@@ -10,63 +12,68 @@ Contact.propTypes = {
 function Contact(props) {
     return (
         <div>
+            <PageTitle heading='Contact' title='Contact' />
 
-        <section className="tf-page-title style-2">    
-            <div className="tf-container">
+            <section className="contact">
+            <div className="container">
                 <div className="row">
-                    <div className="col-md-12">
-
-                        <ul className="breadcrumbs">
-                            <li><Link to="/">Home</Link></li>
-                            <li>Contact</li>
-                        </ul>
-                
+                <div className="col-xl-6 col-md-12">
+                    <div className="image">
+                    <img src={img} alt="" />
                     </div>
                 </div>
-            </div>                    
-        </section>
-                
-        <section className="tf-contact">
-            <div className="tf-container">
-                <div className="row ">
-                    <div className="col-md-6">
-                        <div className="image ani4">
-                            <img src={img} alt="Binasea" />
-                        </div>
+                <div className="col-xl-6 col-md-12">
+                    <div className="contact-main">
+                    <div className="block-text center">
+                        <h3 className="heading">Leave a message for us</h3>
+                        <p className="desc fs-20">Get in touch with Rockie</p>
                     </div>
-                    <div className="col-md-6">
-                        <div className="tf-heading style-3">
-                            <h4 className="heading">Drop Up A Message</h4>
-                            <p className="sub-heading">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum obcaecati dignissimos quae quo ad iste ipsum officiis deleniti asperiores sit. </p>
-                        </div>
-                        <form action="contact/contact-process.php" method="post" id="commentform"  className="comment-form">
-                            <fieldset className="name">
-                                <input type="text" id="name" placeholder="Your Full Name" className="tb-my-input" name="name" tabIndex="2" aria-required="true" required="" />
-                            </fieldset>    
-                            <fieldset className="email">
-                                <input type="email" id="email" placeholder="Your Email Address" className="tb-my-input" name="email" tabIndex="2" aria-required="true" required="" />
-                            </fieldset>
-                            <div className="form-select" id="subject">
-                                <select>
-                                    <option value="1">Select subject</option>
-                                    <option value="2">Select subject</option>
-                                    <option value="3">Select subject</option>
-                                </select>
-                                <i className="icon-fl-down"></i>
-                            </div>
-                            <fieldset className="message">
-                                <textarea id="message" name="message" rows="4" placeholder="Message" tabIndex="4" aria-required="true" required="" />
-                            </fieldset>
-                            <div className="btn-submit"><button className="tf-button" type="submit">Send message</button></div>
-                        </form>
-                        
 
-                    
-                        
+                    <form>
+                        <div className="form-group">
+                        <label>Your name</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter your name"
+                        />
+                        </div>
+                        <div className="form-group">
+                        <label>Email </label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter mail"
+                        />
+                        </div>
+
+                        <div className="form-group">
+                        <label>Subject </label>
+                        <select className="form-control" id="exampleFormControlSelect1">
+                            <option>NFT Items</option>
+                            <option>NFT Items 1</option>
+                            <option>NFT Items 1</option>
+                        </select>
+                        </div>
+                        <div className="form-group">
+                        <label>Message </label>
+                        <textarea
+                            cols="30"
+                            rows="10"
+                            className="form-control"
+                            placeholder="Enter your message"
+                        ></textarea>
+                        </div>
+
+                        <button type="submit" className="btn-action">Send message</button>
+                    </form>
                     </div>
+                </div>
                 </div>
             </div>
-        </section>
+            </section>
+
+            <Sale01 />
             
         </div>
     );

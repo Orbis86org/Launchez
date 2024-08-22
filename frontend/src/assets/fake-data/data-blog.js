@@ -1,48 +1,60 @@
 
 
-import img1 from '../images/blog/blog-1.jpg'
-import img2 from '../images/blog/blog-2.jpg'
-import img3 from '../images/blog/blog-3.jpg'
-import img4 from '../images/blog/blog-4.jpg'
+import img1 from '../images/blog/blog-01.jpg';
+import img2 from '../images/blog/blog-02.jpg';
+
 const dataBlog = [
     {
         id: 1,
         img: img1,
-        title: 'The Next Big Trend In Crypto',
-        cate: 'Music NFT’s',
-        user: 'By SalvadorDali',
-        time: 'Feb 19, 2021',
-        text :'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters...'
+        category: 'learn & earn',
+        title: 'Learn about UI8 coin and earn an All-Access Pass',
+        user:'Floyd Buckridge',
+        time: 'Feb 03, 2021',
+        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
     },
     {
         id: 2,
         img: img2,
-        title: 'Decentraland And Meta Verse',
-        cate: 'Music NFT’s',
-        user: 'By SalvadorDali',
-        time: 'Feb 19, 2021',
-        text :'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters...'
+        category: 'learn & earn',
+        title: 'Learn about UI8 coin and earn an All-Access Pass',
+        user:'Floyd Buckridge',
+        time: 'Feb 03, 2021',
+        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
     },
     {
         id: 3,
-        img: img3,
-        title: 'Beeple Everydays The First 10 Days',
-        cate: 'Music NFT’s',
-        user: 'By SalvadorDali',
-        time: 'Feb 19, 2021',
-        text :'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters...'
+        img: img2,
+        category: 'learn & earn',
+        title: 'Learn about UI8 coin and earn an All-Access Pass',
+        user:'Floyd Buckridge',
+        time: 'Feb 03, 2021',
+        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
     },
     {
         id: 4,
-        img: img4,
-        title: 'Videos Releases Car Drive',
-        cate: 'Music NFT’s',
-        user: 'By SalvadorDali',
-        time: 'Feb 19, 2021',
-        text :'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters...'
+        img: img1,
+        category: 'learn & earn',
+        title: 'Learn about UI8 coin and earn an All-Access Pass',
+        user:'Floyd Buckridge',
+        time: 'Feb 03, 2021'
     },
-
-
+    {
+        id: 5,
+        img: img2,
+        category: 'learn & earn',
+        title: 'Learn about UI8 coin and earn an All-Access Pass',
+        user:'Floyd Buckridge',
+        time: 'Feb 03, 2021'
+    },
+    {
+        id: 6,
+        img: img2,
+        category: 'learn & earn',
+        title: 'Learn about UI8 coin and earn an All-Access Pass',
+        user:'Floyd Buckridge',
+        time: 'Feb 03, 2021'
+    },
    
 ]
 

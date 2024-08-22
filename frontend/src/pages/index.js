@@ -1,54 +1,55 @@
-import Blog01 from "./Blog01";
-import Blog02 from "./Blog02";
-import BlogDetails01 from "./BlogDetails01";
-import BlogDetails02 from "./BlogDetails02";
-import Collection from "./Collection";
-import Contact from "./Contact";
-import Create from "./Create";
-import Dashboard from "./Dashboard";
-import Explore01 from "./Explore01";
-import Explore02 from "./Explore02";
-import Explore03 from "./Explore03";
-import Explore04 from "./Explore04";
-import Faqs from "./Faqs";
-import HelpCenter from "./HelpCenter";
-import Home01 from "./Home01";
-import ItemDetails01 from "./ItemDetails01";
-import ItemDetails02 from "./ItemDetails02";
-import LiveAutions01 from "./LiveAutions01";
-import LiveAutions02 from "./LiveAutions02";
-import Login from "./Login";
-import Ranking from "./Ranking";
-import SignUp from "./SignUp";
+import HomeOne from "./HomeOne";
+import HomeTwo from "./HomeTwo";
+import HomeThree from "./HomeThree";
+import BuyCrypto from "./BuyCrypto";
+import BuyCryptoConfirm from "./BuyCryptoConfirm";
+import BuyCryptoDetails from "./BuyCryptoDetails";
+import Markets from "./Markets";
+import SellSelect from "./SellSelect";
+import SellCryptoAmount from "./SellCryptoAmount";
+import SellCryptoConfirm from "./SellCryptoConfirm";
+import SellCryptoDetails from "./SellCryptoDetails";
+import Blog from "./Blog";
+import BlogGrid01 from "./BlogGrid01";
+import BlogGrid02 from "./BlogGrid02";
+import BlogList from "./BlogList";
+import BlogDetails from "./BlogDetails";
 import Wallet from "./Wallet";
+import UserProfile from "./UserProfile";
+import Login from "./Login";
+import Register from "./Register";
+import Contact from "./Contact";
+import Faq from "./Faq";
+import Create from "./Create";
+import TokenDetails from "./TokenDetails";
 
 
 
 const routes = [
-  { path: '/', component: <Home01 />},
-  { path: '/explore-v1', component: <Explore01 />},
-  { path: '/explore-v2', component: <Explore02 />},
-  { path: '/explore-v3', component: <Explore03 />},
-  { path: '/explore-v4', component: <Explore04 />},
-  { path: '/collection', component: <Collection />},
-  { path: '/live-auctions-v1', component: <LiveAutions01 />},
-  { path: '/live-auctions-v2', component: <LiveAutions02 />},
-  { path: '/item-details-v1', component: <ItemDetails01 />},
-  { path: '/item-details-v2', component: <ItemDetails02 />},
-  { path: '/dashboard', component: <Dashboard />},
-  { path: '/ranking', component: <Ranking />},
-  { path: '/help-center', component: <HelpCenter />},
-  { path: '/faqs', component: <Faqs />},
-  { path: '/wallet', component: <Wallet />},
-  { path: '/login', component: <Login />},
-  { path: '/signup', component: <SignUp />},
+  { path: '/', component: <HomeOne />},
   { path: '/create', component: <Create />},
-  { path: '/blog-v1', component: <Blog01 />},
-  { path: '/blog-v2', component: <Blog02 />},
-  { path: '/blog-details-v1', component: <BlogDetails01 />},
-  { path: '/blog-details-v2', component: <BlogDetails02 />},
+  { path: '/token', component: <TokenDetails />},
+  { path: '/home-v2', component: <HomeTwo />},
+  { path: '/home-v3', component: <HomeThree />},
+  { path: '/buy-crypto-select', component: <BuyCrypto />},
+  { path: '/buy-crypto-confirm', component: <BuyCryptoConfirm />},
+  { path: '/buy-crypto-details', component: <BuyCryptoDetails />},
+  { path: '/markets', component: <Markets />},
+  { path: '/sell-select', component: <SellSelect />},
+  { path: '/sell-crypto-amount', component: <SellCryptoAmount />},
+  { path: '/sell-crypto-confirm', component: <SellCryptoConfirm />},
+  { path: '/sell-crypto-details', component: <SellCryptoDetails />},
+  { path: '/blog-default', component: <Blog />},
+  { path: '/blog-grid-v1', component: <BlogGrid01 />},
+  { path: '/blog-grid-v2', component: <BlogGrid02 />},
+  { path: '/blog-list', component: <BlogList />},
+  { path: '/blog-details', component: <BlogDetails />},
+  { path: '/wallet', component: <Wallet />},
+  { path: '/user-profile', component: <UserProfile />},
+  { path: '/login', component: <Login />},
+  { path: '/register', component: <Register />},
   { path: '/contact', component: <Contact />},
-
+  { path: '/faq', component: <Faq />},
 
 
 ]

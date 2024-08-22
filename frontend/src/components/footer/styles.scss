@@ -88,26 +88,6 @@
         }
       }
     }
-
-    .widget.widget-menu {
-      @include tablet {
-        flex-wrap: wrap;
-        .menu {
-          width: 50%;
-          margin: 0 0 30px 0 !important;
-        }
-      }
-    }
-  }
-
-  .footer .widget.widget-subcribe {
-    margin-left: 20px;
-    margin-top: 62px;
-
-    @include mobile {
-      margin-left: 0;
-      margin-top: 40px;
-    }
   }
   
   .footer.style-2 {
@@ -284,12 +264,12 @@
   width: 100%;
 }
 #scroll-top:before {
-  background: var(--primary-color5);
+  background: var(--primary);
   z-index: -1;
 }
 
 #scroll-top::after {
-  color: var(--background-body);
+  color: rgb(255, 255, 255);
   content: "";
   font-family: "Font Awesome 5 Pro";
   font-size: 18px;

@@ -6,38 +6,85 @@ import { Dropdown } from 'react-bootstrap';
 
 import './styles.scss';
 import logo from '../../assets/images/logo/logo.png';
-import logodark from '../../assets/images/logo/logo_dark.png';
-
+import logodark from '../../assets/images/logo/logo-dark.png';
+import avt from '../../assets/images/avt/avt-01.jpg';
 import DarkMode from './DarkMode';
 
+import icon1 from '../../assets/images/flags/us.jpg'
+import icon2 from '../../assets/images/flags/spain.jpg'
+import icon3 from '../../assets/images/flags/germany.jpg'
+import icon4 from '../../assets/images/flags/italy.jpg'
+import icon5 from '../../assets/images/flags/russia.jpg'
 // import Button from '../button';
 
+import {HashConnect } from 'hashconnect';
 
+import { LedgerId } from '@hashgraph/sdk';
+import Button from "../button";
+
+const appMetadata = {
+    name: "Launchez",
+    description: "<Your dapp description>",
+    icons: [""],
+    url: "https://launchez.orbis86.com"
+}
+
+let pairingString = '';
+let pairingData = null;
+let state = 'Disconnected';
+
+
+let hashconnect = new HashConnect( false );
+let initData = await hashconnect.init(appMetadata, process.env.REACT_APP_HEDERA_NETWORK, false );
+
+async function init() {
+
+    //register events
+    setUpHashConnectEvents();
+
+    let topic = initData.topic;
+    pairingString = initData.pairingString;
+
+    //Saved pairings will return here, generally you will only have one unless you are doing something advanced
+    pairingData = initData.savedPairings[0];
+
+    return initData;
+}
+
+function setUpHashConnectEvents() {
+    hashconnect.pairingEvent.on((newPairing) => {
+        pairingData = newPairing;
+
+        window.location.reload();
+    })
+
+    hashconnect?.disconnectionEvent?.on((data) => {
+        pairingData = null;
+    });
+
+    hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
+        state = connectionStatus;
+    })
+
+    hashconnect.foundExtensionEvent.once((walletMetadata) => {
+        //do something with metadata
+        // console.log('Wallet Extension Found');
+    })
+}
 
 const Header = () => {
-
+    //initialize and use returned data
+    const [initData2, setInitData2 ] = useState( false )
     const [scroll, setScroll] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    // Simulate authentication check
     useEffect(() => {
-        // Replace this with your actual authentication logic
-        const checkAuth = () => {
-            const token = localStorage.getItem('token'); // Example check
-            setIsLoggedIn(!!token);
-        };
+            async function initHashpack() {
+                let data = await init();
 
-        checkAuth();
-    }, []);
+                setInitData2( data );
+            }
 
-    const handleLogout = () => {
-        // Perform logout logic here (e.g., remove token, etc.)
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
-      };
+            initHashpack();
 
-
-        useEffect(() => {
         window.addEventListener("scroll", () => {
             setScroll(window.scrollY > 300);
         });
@@ -46,102 +93,436 @@ const Header = () => {
         }
     }, []);
 
+    useEffect(() => {
+        if( initData2 ){
+
+        }
+    }, [ initData2 ]);
+
     const [menuActive, setMenuActive] = useState(null);
 
     const handleMenuActive = () => {
         setMenuActive(!menuActive);
       };
 
-    
     const [activeIndex, setActiveIndex] = useState(null);
     const handleDropdown = index => {
-        setActiveIndex(index); 
+        setActiveIndex(index);
     };
 
     return (
-        <header className={`header ${scroll ? 'is-fixed' : ''}`}>
-                <div className="tf-container">
-                    <div className="row">
-                        <div className="col-md-12">                              
-                            <div id="site-header-inner">                                 
-                                <div id="site-logo" className="clearfix">
-                                    <div id="site-logo-inner">
-                                        <Link to="/" rel="home" className="main-logo">
-                                            <img id="logo_header" className='logo-dark' src={logodark} alt="Launchez" />
-                                            <img id="logo_header" className='logo-light' src={logo} alt="Launchez" />
-                                        </Link>
-                                    </div>
-                                </div>
-                                
-                               <div className="header-center">
-                                <nav id="main-nav" className={`main-nav ${menuActive ? 'active' : ''}`}>
-                                    <ul id="menu-primary-menu" className="menu">
-                                        {
-                                            menus.map((data,idx) => (
-                                                <li key={idx} onClick={()=> handleDropdown(idx)} className={`menu-item ${data.namesub ? 'menu-item-has-children' : ''} ${activeIndex === idx ? 'active' : ''}`} 
-                                                
-                                                >
-                                                    <Link to={data.links}>{data.name}</Link>
+        <header id="header_main" className={`header ${scroll ? 'is-fixed' : ''}`}>
+            <div className="container-fluid">
+                <div className="row">
+                <div className="col-12">
+                    <div className="header__body d-flex justify-content-between">
+                    <div className="header__left">
+                        <div className="logo">
+                        <NavLink to='/' className="light">
+                            Launchez
+                        </NavLink>
+                        <NavLink to='/' className="dark">
+                            Launchez
+                        </NavLink>
+                        </div>
+                        <div className="left__main">
+                            <nav id="main-nav" className={`main-nav ${menuActive ? 'active' : ''}`}>
+                                <ul id="menu-primary-menu" className="menu">
+                                {
+                                    menus.map((data,idx) => (
+                                        <li key={idx} onClick={()=> handleDropdown(idx)} className={`menu-item ${data.namesub ? 'menu-item-has-children' : ''} ${activeIndex === idx ? 'active' : ''}`}
+
+                                        >
+                                            <Link to={data.links}>{data.name}</Link>
+                                            {
+                                                data.namesub &&
+                                                <ul className="sub-menu">
                                                     {
-                                                        data.namesub &&
-                                                        <ul className="sub-menu">
-                                                            {
-                                                                data.namesub.map((submenu) => (
-                                                                    <li key={submenu.id} className="menu-item"><NavLink to={submenu.links}>{submenu.sub}</NavLink></li>
-                                                                ))
-                                                            }
-                                                        </ul>
+                                                        data.namesub.map((submenu) => (
+                                                            <li key={submenu.id} className="menu-item"><NavLink to={submenu.links}>{submenu.sub}</NavLink></li>
+                                                        ))
                                                     }
-                                                    
-                                                </li>
-                                            ))
-                                        }
-                                    </ul>
-                                </nav>
-                               </div>
+                                                </ul>
+                                            }
 
-                                <div className="header-right">
-                                    <Link to="/wallet" className="tf-button "><span>Connect Wallet</span></Link>
-                                    {isLoggedIn 
-                                    ? 
-                                    (<Link to="/login"  alt="Logout" ><span className="user "><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H8m12 0-4 4m4-4-4-4M9 4H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h2"/>
-                                      </svg>
-                                      </span></Link>) 
-                                    :
-                                    (
-                                    <Link to="/login" ><span className="user "><svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <mask id="mask0_2981_49321" maskUnits="userSpaceOnUse" x="0" y="11" width="16" height="7">
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M0 11.2949H15.1998V18.0009H0V11.2949Z" fill="white"/>
-                                        </mask>
-                                        <g mask="url(#mask0_2981_49321)">
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M7.59987 12.7117C4.81795 12.7117 1.50146 13.049 1.50146 14.6594C1.50146 15.9365 3.55362 16.5844 7.59987 16.5844C11.6461 16.5844 13.6983 15.9298 13.6983 14.6405C13.6983 13.3607 11.6461 12.7117 7.59987 12.7117ZM7.59998 18.0013C5.5218 18.0013 0 18.0013 0 14.6594C0 11.2949 5.72001 11.2949 7.59998 11.2949C10.8624 11.2949 15.2 11.6416 15.2 14.6405C15.2 18.0013 9.47995 18.0013 7.59998 18.0013Z" fill="#B9B8BB"/>
-                                        </g>
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M7.60027 1.41683C5.59316 1.41683 3.96045 2.9574 3.96045 4.85029C3.96045 6.74318 5.59316 8.28374 7.60027 8.28374H7.6313C8.59632 8.27997 9.50527 7.92198 10.187 7.27307C10.8697 6.62605 11.2431 5.76556 11.2391 4.85312C11.2391 2.9574 9.60638 1.41683 7.60027 1.41683ZM7.60038 9.70058C4.76541 9.70058 2.45898 7.52432 2.45898 4.85029C2.45898 2.17625 4.76541 0 7.60038 0C10.4344 0 12.7408 2.17625 12.7408 4.85029C12.7468 6.13866 12.2172 7.35525 11.2522 8.27147C10.2892 9.18863 9.00286 9.69585 7.63442 9.70058H7.60038Z" fill="#B9B8BB"/>
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M14.4981 8.62571C14.1297 8.62571 13.8084 8.36973 13.7553 8.01553C13.6983 7.62826 13.9836 7.26933 14.394 7.21549C15.6433 7.05019 16.5863 6.02724 16.5883 4.83521C16.5883 3.65074 15.6893 2.6514 14.453 2.4606C14.0436 2.39637 13.7663 2.03272 13.8334 1.64639C13.9005 1.26007 14.2879 1.00032 14.6953 1.06172C16.6624 1.36586 18.0899 2.95366 18.0899 4.83616C18.0859 6.72999 16.5873 8.35651 14.6032 8.6191C14.5682 8.62382 14.5331 8.62571 14.4981 8.62571Z" fill="#B9B8BB"/>
-                                        <mask id="mask1_2981_49321"  maskUnits="userSpaceOnUse" x="15" y="10" width="5" height="6">
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M15.8613 10.8457H19.9994V15.5473H15.8613V10.8457Z" fill="white"/>
-                                        </mask>
-                                        <g mask="url(#mask1_2981_49321)">
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M17.9138 15.5473C17.6104 15.5473 17.3251 15.3725 17.212 15.0901C17.0649 14.7245 17.2601 14.3146 17.6475 14.1767C18.4984 13.8726 18.4984 13.5013 18.4984 13.3427C18.4984 12.8071 17.8267 12.4406 16.5023 12.2545C16.0918 12.196 15.8085 11.8352 15.8696 11.4488C15.9317 11.0616 16.3211 10.8018 16.7235 10.8519C19.4323 11.2344 19.9999 12.4179 19.9999 13.3427C19.9999 14.0312 19.6846 14.9635 18.18 15.501C18.0929 15.5321 18.0028 15.5473 17.9138 15.5473Z" fill="#B9B8BB"/>
-                                        </g>
-                                        </svg>
-                                        </span>
-                                    </Link>
-                                    )
-                                    }
-                                    <DarkMode />
-                                </div>  
+                                        </li>
+                                    ))
+                                }
+                                </ul>
+                            </nav>
 
-                                <div className={`mobile-button ${menuActive ? 'active' : ''}`} onClick={handleMenuActive}><span></span></div>
-                            </div>
+
                         </div>
                     </div>
+
+                    <div className="header__right">
+                            <Dropdown style={{ display: 'none' }}>
+                                <Dropdown.Toggle >
+                                    Assets
+                                </Dropdown.Toggle>
+
+                                <Dropdown.Menu>
+                                <Dropdown.Item href="#">
+                                    <li data-toggle="modal" data-target="#delete_client">Binance Visa Card</li>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <li data-toggle="modal" data-target="#edit_client">Crypto Loans</li>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <li data-toggle="modal" data-target="#edit_client">Binance Pay</li>
+                                </Dropdown.Item>
+
+                                </Dropdown.Menu>
+                            </Dropdown>
+
+                            <Dropdown style={{ display: 'none' }}>
+                                <Dropdown.Toggle >
+                                Orders & Trades
+                                </Dropdown.Toggle>
+
+                                <Dropdown.Menu>
+                                <Dropdown.Item href="#">
+                                    <li data-toggle="modal" data-target="#delete_client">Binance Convert</li>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <li data-toggle="modal" data-target="#edit_client">Spot</li>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <li data-toggle="modal" data-target="#edit_client">Margin</li>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <li data-toggle="modal" data-target="#edit_client">P2P</li>
+                                </Dropdown.Item>
+
+                                </Dropdown.Menu>
+                            </Dropdown>
+
+                            <Dropdown  style={{ display: 'none' }}>
+                                <Dropdown.Toggle >
+                                    EN/USD
+                                </Dropdown.Toggle>
+
+                                <Dropdown.Menu>
+                                <Dropdown.Item href="#">
+                                    <Link
+                                        to="#"
+                                        className="dropdown-item notify-item language"
+                                        data-lang="en"
+                                        >
+                                        <img
+                                            src={icon1}
+                                            alt="user-image"
+                                            className="me-1"
+                                            height="12"
+                                        />
+                                        <span className="align-middle">English</span>
+                                    </Link>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <Link
+                                        to="#"
+                                        className="dropdown-item notify-item language"
+                                        data-lang="en"
+                                        >
+                                        <img
+                                            src={icon2}
+                                            alt="user-image"
+                                            className="me-1"
+                                            height="12"
+                                        />
+                                        <span className="align-middle">English</span>
+                                    </Link>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <Link
+                                        to="#"
+                                        className="dropdown-item notify-item language"
+                                        data-lang="en"
+                                        >
+                                        <img
+                                            src={icon3}
+                                            alt="user-image"
+                                            className="me-1"
+                                            height="12"
+                                        />
+                                        <span className="align-middle">English</span>
+                                    </Link>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <Link
+                                        to="#"
+                                        className="dropdown-item notify-item language"
+                                        data-lang="en"
+                                        >
+                                        <img
+                                            src={icon4}
+                                            alt="user-image"
+                                            className="me-1"
+                                            height="12"
+                                        />
+                                        <span className="align-middle">English</span>
+                                    </Link>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <Link
+                                        to="#"
+                                        className="dropdown-item notify-item language"
+                                        data-lang="en"
+                                        >
+                                        <img
+                                            src={icon5}
+                                            alt="user-image"
+                                            className="me-1"
+                                            height="12"
+                                        />
+                                        <span className="align-middle">English</span>
+                                    </Link>
+                                </Dropdown.Item>
+
+
+                                </Dropdown.Menu>
+                            </Dropdown>
+
+                        <DarkMode />
+
+
+                        <div className="dropdown notification">
+                        <button
+                            className="btn dropdown-toggle"
+                            type="button"
+                            id="dropdownMenuButton3"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                        >
+                            <span className="icon-notification"></span>
+                        </button>
+
+                        <div
+                            className="dropdown-menu"
+                            aria-labelledby="dropdownMenuButton3"
+                        >
+                            <div className="dropdown-item">
+                            <div className="media server-log">
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="feather feather-server"
+                                >
+                                <rect
+                                    x="2"
+                                    y="2"
+                                    width="20"
+                                    height="8"
+                                    rx="2"
+                                    ry="2"
+                                ></rect>
+                                <rect
+                                    x="2"
+                                    y="14"
+                                    width="20"
+                                    height="8"
+                                    rx="2"
+                                    ry="2"
+                                ></rect>
+                                <line x1="6" y1="6" x2="6" y2="6"></line>
+                                <line x1="6" y1="18" x2="6" y2="18"></line>
+                                </svg>
+                                <div className="media-body">
+                                <div className="data-info">
+                                    <h6 className="">Server Rebooted</h6>
+                                    <p className="">45 min ago</p>
+                                </div>
+
+                                <div className="icon-status">
+                                    <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="feather feather-x"
+                                    >
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            <div className="dropdown-item">
+                            <div className="media">
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="feather feather-heart"
+                                >
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                                ></path>
+                                </svg>
+                                <div className="media-body">
+                                <div className="data-info">
+                                    <h6 className="">Licence Expiring Soon</h6>
+                                    <p className="">8 hrs ago</p>
+                                </div>
+
+                                <div className="icon-status">
+                                    <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="feather feather-x"
+                                    >
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            <div className="dropdown-item">
+                            <div className="media file-upload">
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="feather feather-file-text"
+                                >
+                                <path
+                                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                                ></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                                <div className="media-body">
+                                <div className="data-info">
+                                    <h6 className="">Kelly Portfolio.pdf</h6>
+                                    <p className="">670 kb</p>
+                                </div>
+
+                                <div className="icon-status">
+                                    <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="feather feather-check"
+                                    >
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div className={`mobile-button ${menuActive ? 'active' : ''}`} onClick={handleMenuActive}><span></span></div>
+
+                        {/* Wallet Connect */}
+                        <div className="wallet">
+
+                            {/* <Link to="/wallet"> Wallet </Link> */}
+                        </div>
+
+                        <a href='#'
+                           onClick={ async function (e) {
+                               e.preventDefault();
+                               // Disconnect existing
+                               hashconnect.disconnect( initData2?.topic );
+
+                               // Open HashPack Modal
+                               hashconnect.connectToLocalWallet();
+                           }}
+                        >{ initData2 && initData2?.savedPairings[0]?.accountIds[0]? initData2?.savedPairings[0]?.accountIds[0] : 'Connect Wallet'}</a>
+
+
+                        <Dropdown className='user'  style={{ display: 'none' }}>
+                                <Dropdown.Toggle >
+                                    <img src={avt} alt="Rockie" />
+                                </Dropdown.Toggle>
+
+                                <Dropdown.Menu>
+                                <Dropdown.Item href="#">
+                                    <Link className="dropdown-item" to="#"><i className="bx bx-user font-size-16 align-middle me-1"></i>
+                                    <span>Profile</span></Link>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <Link className="dropdown-item" to="#"><i
+                                        className="bx bx-wallet font-size-16 align-middle me-1"
+                                    ></i>
+                                    <span>My Wallet</span></Link>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <Link className="dropdown-item d-block" to="#"
+                                    ><i
+                                        className="bx bx-wrench font-size-16 align-middle me-1"
+                                    ></i>
+                                    <span>Settings</span></Link>
+                                </Dropdown.Item>
+                                <Dropdown.Item href="#">
+                                    <Link className="dropdown-item text-danger" to="/login"
+                                    ><i
+                                        className="bx bx-power-off font-size-16 align-middle me-1 text-danger"
+                                    ></i>
+                                    <span>Logout</span></Link>
+                                </Dropdown.Item>
+
+                                </Dropdown.Menu>
+                            </Dropdown>
+
+
+                    </div>
+                    </div>
                 </div>
-                
-            </header>
-       
+                </div>
+            </div>
+        </header>
+
     );
 }
 
 export default Header;
+export { hashconnect };
+export { initData };
+export {pairingData };
