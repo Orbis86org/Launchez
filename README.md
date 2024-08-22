@@ -30,12 +30,12 @@ Launchez - A Fair Launch Dapp for launching ERC-20 tokens.
 
 - Launchez is currently a fully functional MVP showcasing token creation and buy/sell features on the bonding curve, implemented using the Hedera SDK.
 - Features to increase community engagement, such as comments and spaces, are to be developed according to the roadmap.
-- Soniya, the founder of Orbis86, led the team as Product Manager, while Hema (Smart Contract Developer & Partnership Manager), Alex (Full Stack Developer), and Dishit (Front-End Developer) worked together on product development.
+- Soniya, the founder of Orbis86, led the team as Product Manager, while Hema (Smart Contract Developer & Partnership Manager), Pratishtha (Smart Contract Developer), Alex (Full Stack Developer Advisor) worked together on product development.
 
-### Validation with Orbis Community
+### Validation with Orbis86 Community
 
 - The product idea was refined through feedback from the Orbis86 community, which is very active on Hedera.
-- Feedback highlighted the lack of a meme-coin launch dapp with an easy interface, currently unavailable on Hedera.
+- Feedback highlighted the lack of a meme-coin/fungible token launch dapp with an easy interface, currently unavailable on Hedera.
 - There is potential to attract degens to the Hedera ecosystem through this project.
 - The project has been welcomed by SMEs of the trading community, with encouragement to add a commenting feature, which has been added to our pipeline.
 
@@ -52,6 +52,6 @@ Launchez - A Fair Launch Dapp for launching ERC-20 tokens.
 
 ### Screenshots
 
-![Token Creation](./Images/screenshot-localhost_3000-2024.08.20-23_43_52.png)
-![Token Page](./Images/screenshot-localhost_3000-2024.08.20-23_44_56.png)
-![Home Page](./Images/screenshot-localhost_3000-2024.08.20-23_45_48.png)
+![Token Creation](./Images/CreateToken.png)
+![Token Page](./Images/TokenDetail.png)
+![Home Page](./Images/HomePage.png)
