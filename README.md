@@ -52,6 +52,6 @@ Launchez - A Fair Launch Dapp for launching ERC-20 tokens.
 
 ### Screenshots
 
-![Token Creation](./Images/CreateToken.png)
-![Token Page](./Images/TokenDetail.png)
-![Home Page](./Images/HomePage.png)
+![Token Creation](./images/CreateToken.png)
+![Token Page](./images/TokenDetail.png)
+![Home Page](./images/HomePage.png)
