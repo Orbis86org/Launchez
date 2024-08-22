@@ -50,7 +50,46 @@ Launchez - A Fair Launch Dapp for launching ERC-20 tokens.
 
 [Pitch Deck](https://www.canva.com/design/DAGOcUhXGgA/pfILKZtMFMoRyPZYJUhFxA/view?utm_content=DAGOcUhXGgA&utm_campaign=designshare&utm_medium=link&utm_source=editor)
 
-### Screenshots
+## Bonding Curve
+
+The bonding curve allows users to buy tokens on Launchez based on virtual collateral and token reserves. Once the market cap of a token reaches at least ~719,550 Hbar or 80%+ tokens are sold on the bonding curve, the token will be migrated to SaucerSwap and LP tokens received from SaucerSwap will be sent to a burner contract to lock them forever.
+
+### Token Supply and Fair Launch Principles
+
+- Every token X launched on Launchez will have a fixed supply of 700 Million tokens with no special allocations set aside for developer, advisors, investors, etc.
+- Once a token reaches a market cap of ~719k Hbar aka 80%+ tokens are sold, the token will be migrated to Saucerswap. A liquidity pool will be created and the LP tokens will be locked forever in a smart contract.
+
+### Bonding Curve Formula
+For any token X,
+
+k = va * vb
+where
+k is a constant
+va = virtual token X supply
+vb = virtual hBar collateral
+
+### Initial Values
+va = 720,000,000 virtual token X supply
+vb = 34,300 virtual hbar collateral
+Price of token X at launch (p0) = vb/va
+
+### Fees
+- Fees collected when creating token X = 50 hbar + gas fees
+- Transaction fees for Bonding Curve trades = 2%
+- Fees to deploy Liquidity Pool on Saucerswap = 5000 Hbar (Deducted from the collateral collected and includes 50 USD fee to be paid to Saucerswap for creation of a Liquidity Pool)
+
+### Migration to Saucerswap
+
+When 80%+ tokens are sold on the bonding curve, a liquidity pool will be created on Saucerswap
+Approximate Hbar in the Liquidity pool = 120,000+ Hbar
+Approximate tokens in the Liquidity pool = Lesser than 135 Million tokens
+
+#### Calculations for Liquidity Pool
+Final price at migration (p1) = (vb + collateral collected in Hbar)/(va - token X sold on the bonding curve)
+Tokens to migrate (M) = (Collateral collected in hbar - 5000 hbar fees)/p1
+Tokens to burn by locking away in smart contract = 700,000,000 - M - Total tokens sold on the bonding curve
+
+## Screenshots
 
 ![Token Creation](./images/CreateToken.png)
 ![Token Page](./images/TokenDetail.png)
