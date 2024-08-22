@@ -48,7 +48,7 @@ Launchez - A Fair Launch Dapp for launching ERC-20 tokens.
 
 ### Pitch Deck
 
-[Pitch Deck](https://www.canva.com/design/DAGNj4UtZJ4/E7jyf6nhY2mQgIp4kBSiww/edit?utm_content=DAGNj4UtZJ4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+[Pitch Deck](https://www.canva.com/design/DAGOcUhXGgA/pfILKZtMFMoRyPZYJUhFxA/view?utm_content=DAGOcUhXGgA&utm_campaign=designshare&utm_medium=link&utm_source=editor)
 
 ### Screenshots
 
