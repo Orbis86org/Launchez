@@ -23,7 +23,7 @@ require('dotenv').config();
         const tokenConfig = {
             name: "FairToken",
             symbol: "FTK",
-            totalSupply: 700000000000000000000000000, // 700 million tokens with 18 decimals
+            totalSupply: process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY0000000000, // 700 million tokens with 18 decimals
             decimals: 18,
             treasuryAccountId: process.env.HEDERA_TREASURY_ID,
             treasuryPrivateKey: process.env.HEDERA_TREASURY_KEY,
@@ -38,7 +38,7 @@ require('dotenv').config();
         console.log(`Token deployed with ID: ${tokenId}`);
 
         // Step 2: Initialize the BondingCurve with the initial supply and liquidity
-        const initialSupply = 700000000000000000000000000; // 700 million tokens with 18 decimals
+        const initialSupply = process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY0000000000; // 700 million tokens with 18 decimals
         const initialLiquidity = 34300; // Initial liquidity in Hbar
         const bondingCurve = new BondingCurve(initialSupply, initialLiquidity);
 

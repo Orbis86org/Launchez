@@ -6,8 +6,8 @@ import Header from './components/header/index';
 import Footer from './components/footer';
 import '../src/assets/font/font-awesome.css'
 import routes from './pages';
-import Page404 from './pages/404';
 import {ToastContainer} from "react-toastify";
+import Page404 from "./pages/404";
 
 function App() {
 

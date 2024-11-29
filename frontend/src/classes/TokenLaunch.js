@@ -78,7 +78,6 @@ class TokenLaunch {
             const response = await this.transaction.execute(this.client);
             // Get the receipt of the transaction to confirm the token creation
             const receipt = await response.getReceipt(this.client);
-            console.log(`Token created with ID: ${receipt.tokenId}`); // Log the token ID upon successful creation
             return receipt.tokenId; // Return the token ID
         } catch (error) {
             console.error("Error deploying token: ", error); // Log any errors that occur during deployment

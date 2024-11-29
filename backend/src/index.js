@@ -20,12 +20,15 @@ app.post("/api/tokens", async (req, res) => {
 	try{
 		let data = req.body;
 
+		console.log( data );
+
 		const prisma = new PrismaClient();
 		let token = await prisma.token.create({
 			data: {
 				name: data.name,
 				tokenId: data.token_id,
 				ticker: data.ticker,
+				memo: data.memo,
 				description: data.description,
 				walletAddress: data.wallet_address,
 				bondingCurveSupply: data.bonding_curve_supply,
@@ -34,11 +37,11 @@ app.post("/api/tokens", async (req, res) => {
 			},
 		});
 
-		res.json({ success: true, data: token });
+		return res.json({ success: true, data: token });
 	} catch (error) {
 		console.log( error );
 
-		res.json({ success: false });
+		return res.json({ success: false });
 	}
 });
 app.get("/api/tokens", async (req, res) => {
@@ -55,7 +58,7 @@ app.get("/api/tokens", async (req, res) => {
 			})
 
 			if( token ){
-				res.json({
+				return res.json({
 					success: true,
 					data: token
 				});
@@ -63,7 +66,7 @@ app.get("/api/tokens", async (req, res) => {
 		} else {
 			let tokens = await prisma.token.findMany()
 
-			res.json({
+			return res.json({
 				success: true,
 				data: tokens
 			});
@@ -72,7 +75,7 @@ app.get("/api/tokens", async (req, res) => {
     } catch (error) {
         console.log( error );
 
-        res.json({ success: false });
+        return res.json({ success: false });
     }
 });
 app.put("/api/tokens", async (req, res) => {
@@ -86,7 +89,7 @@ app.put("/api/tokens", async (req, res) => {
 		if( token_id ){
 			let token = await prisma.token.update({
 				where: {
-					tokenID: token_id,
+					tokenId: token_id,
 				},
 				data: {
 					bondingCurveSupply: data.bonding_curve_supply,
@@ -95,19 +98,19 @@ app.put("/api/tokens", async (req, res) => {
 			})
 
 			if( token ){
-				res.json({
+				return res.json({
 					success: true,
 					data: token
 				});
 			}
 		}
 
-		res.json({ success: false });
+		return res.json({ success: false });
 
 	} catch (error) {
 		console.log( error );
 
-		res.json({ success: false });
+		return res.json({ success: false });
 	}
 });
 

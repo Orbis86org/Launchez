@@ -12,15 +12,17 @@ import CandleStickChart from "../components/CandleStickChart";
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import {Button, ProgressBar, Spinner} from "react-bootstrap";
-import {client, HEDERA_ACCOUNT_ID, HEDERA_PRIVATE_KEY, sendTransaction} from "./Create";
 import {AccountId, Hbar, PrivateKey, TransactionReceiptQuery, TransferTransaction} from "@hashgraph/sdk";
 import BondingCurve from "../classes/BondingCurve";
 import TradeExecutor from "../classes/TradeExecutor";
-import {pairingData} from "../components/header";
 import { SocialIcon } from 'react-social-icons'
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {useWalletInterface} from "../services/wallets/useWalletInterface";
+import {TransactionService} from "../services/transactions/transactionService";
+import TokenService from "../services/tokens/tokenService";
+import ToastsService from "../services/toasts/toastsService";
 
 
 TokenDetails.propTypes = {
@@ -69,7 +71,7 @@ function TokenDetails(props) {
 
     const bonding_curve = new BondingCurve(
         72000000000000000,
-        70000000000000000,
+        process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY,
         Number( tokenDetails?.bondingCurveSupply ),
         57500000000000000,
         Number( tokenDetails?.bondingCurveHBAR )
@@ -99,43 +101,37 @@ function TokenDetails(props) {
             // Simulate the buy to get the amount of token X and check for max supply limits
             let bonding_curve = new BondingCurve(
                 72000000000000000,
-                70000000000000000,
+                process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY,
                 Number( tokenDetails?.bondingCurveSupply ),
                 57500000000000000,
                 Number( tokenDetails?.bondingCurveHBAR )
             );
             const { finalPrice, amountX, slippage } = bonding_curve.simulateBuy(amountY);
 
-            // Create a transaction to transfer Hbar (Y) from buyer to treasury
-            const transferTx = new TransferTransaction()
-                .addHbarTransfer(buyerAccountId, new Hbar(-amountY)) // Buyer pays amountY Hbar
-                .addHbarTransfer( HEDERA_ACCOUNT_ID, new Hbar(amountY)) // Treasury receives amountY Hbar
-                .addTokenTransfer(tokenId, HEDERA_ACCOUNT_ID, -amountX ) // Treasury sends amountX of token X
-                .addTokenTransfer(tokenId, buyerAccountId, amountX); // Buyer receives amountX of token X;
+            /*
+             * Create a transaction to transfer Hbar (Y) from buyer to treasury, and transfer of token (X)
+             * from treasury to buyer
+             *
+             * @type {TransactionId | string}
+             */
+            const transactionId = await walletInterface.executeTokenAndHbarTransferTransaction(
+                amountY, // HBAR amount
+                tokenId,// Token ID
+                amountX, // Token Amount
+            );
 
-            let sent = await sendTransaction(transferTx, pairingData?.accountIds[0] );
-            let transaction_id = sent?.response?.transactionId;
-            if( ! transaction_id ){
+            if( ! transactionId ){
                 return false;
             }
 
-            let trans_receipt = await new TransactionReceiptQuery()
-                .setTransactionId(transaction_id)
-                .execute(client)
+            const trans_receipt = await new TransactionService()
+                .transactionQuery( transactionId );
 
-            let full_transaction_id = transaction_id.replace("@", "-").split('').reverse().join('')
-                .replace('.', '-')
-                .split('').reverse().join('');
-
-            if( ! full_transaction_id ){
-                return false;
-            }
-
-            if (trans_receipt.status.toString() === "SUCCESS") {
+            if ( trans_receipt ){
                 return { finalPrice, amountX, slippage };
-            } else {
-                return false;
             }
+
+            return false;
         } catch (error) {
             console.error("Error executing buy transaction: ", error);
             return false;
@@ -154,47 +150,38 @@ function TokenDetails(props) {
     async function executeSell(sellerAccountId, amountX, tokenId) {
 
         try {
-            // Simulate the sell to get the amount of token Y (Hbar)
-
-            // Account for decimals in token transfer
-            amountX = amountX * Math.pow( 10, 8 );
 
             const { finalPrice, amountY, slippage } = bonding_curve.simulateSell(amountX);
 
-            let tiny_bar_amount = Math.floor( amountY * Math.pow( 10, 8) );
 
             // Create a transaction to transfer token X from seller to treasury, and Hbar (Y) from treasury to seller
-            const transferTx = new TransferTransaction()
-                .addTokenTransfer(tokenId, sellerAccountId, -amountX) // Seller sends amountX of token X
-                .addTokenTransfer(tokenId, HEDERA_ACCOUNT_ID, amountX) // Treasury receives amountX of token X
-                .addHbarTransfer(HEDERA_ACCOUNT_ID, Hbar.fromTinybars( - tiny_bar_amount )) // Treasury sends amountY Hbar
-                .addHbarTransfer(sellerAccountId, Hbar.fromTinybars( tiny_bar_amount ) ) // Seller receives amountY Hbar
+            /*
+              * Create a transaction to transfer token X from seller to treasury,
+              * and Hbar (Y) from treasury to seller
+              *
+              * We add negatives in the amounts because we want the function to do the reverse
+              * of what it is coded to do.
+              *
+              * @type {TransactionId | string}
+              */
+            const transactionId = await walletInterface.executeTokenAndHbarTransferTransaction(
+                -amountY, // HBAR amount
+                tokenId,// Token ID
+                -amountX, // Token Amount
+            );
 
-            let sent = await sendTransaction(transferTx, pairingData?.accountIds[0] );
-            let transaction_id = sent?.response?.transactionId;
-            if( ! transaction_id ){
+            if( ! transactionId ){
                 return false;
             }
 
-            let trans_receipt = await new TransactionReceiptQuery()
-                .setTransactionId(transaction_id)
-                .execute(client);
+            const transReceipt = await new TransactionService()
+                .transactionQuery( transactionId );
 
-            let full_transaction_id = transaction_id.replace("@", "-").split('').reverse().join('')
-                .replace('.', '-')
-                .split('').reverse().join('');
-
-            if( ! full_transaction_id ){
-                return false;
+            if ( transReceipt ){
+                return { finalPrice, amountY, slippage };
             }
 
-
-            if (trans_receipt.status.toString() === "SUCCESS") {
-                return { finalPrice, amountY, slippage, tiny_bar_amount };
-            } else {
-
-                return false;
-            }
+            return false;
         } catch (error) {
             console.error("Error executing sell transaction: ", error);
             return false;
@@ -207,6 +194,8 @@ function TokenDetails(props) {
 
     const [sellAmount, setSellAmount] = useState(0);
     const[sellSlippage, setSellSlippage] = useState(0);
+
+    const { accountId, walletInterface } = useWalletInterface();
 
     return (
         <>
@@ -251,83 +240,48 @@ function TokenDetails(props) {
                                                     <InputGroup.Text id="basic-addon2">HBAR</InputGroup.Text>
                                                 </InputGroup>
 
-                                                {/*<InputGroup className="mb-3">
-                                            <Form.Control
-                                                placeholder="Slippage"
-                                                aria-label="Slippage"
-                                                aria-describedby="basic-addon2"
-                                                name='buy_slippage'
-                                                onChange={ function( e ){
-                                                    setBuySlippage( e.target.value );
-                                                }}
-                                            />
-                                            <InputGroup.Text id="basic-addon2">%</InputGroup.Text>
-                                        </InputGroup>*/}
-
                                                 <Button
                                                     type="submit"
                                                     className="btn-action"
-                                                    disabled={ !pairingData?.accountIds[0] }
+                                                    disabled={ ! accountId }
                                                     onClick={ async function(e){
                                                         e.preventDefault();
 
-                                                        let success = await executeBuy( pairingData?.accountIds[0], buyAmount, tokenDetails?.tokenId );
+                                                        let success = await executeBuy( accountId, buyAmount, tokenDetails?.tokenId );
                                                         if( success && success?.amountX ){
                                                             // Update Db
                                                             let new_supply = Number( tokenDetails?.bondingCurveSupply ) - success?.amountX;
                                                             let new_hbar = Number( tokenDetails?.bondingCurveHbar ) + Number( buyAmount );
 
+                                                            const tokenService = await  new TokenService(
+                                                                AccountId.fromString( accountId ),
+                                                                walletInterface
+                                                            );
 
-                                                            const myHeaders = new Headers();
-                                                            myHeaders.append("Content-Type", "application/json");
-
-                                                            const raw = JSON.stringify({
+                                                            const raw = {
                                                                 "token_id": tokenDetails?.tokenId,
                                                                 "bonding_curve_supply": new_supply.toString(),
                                                                 "bonding_curve_hbar": new_hbar.toString()
-                                                            });
-
-                                                            const requestOptions = {
-                                                                method: "PUT",
-                                                                headers: myHeaders,
-                                                                body: raw,
-                                                                redirect: "follow"
                                                             };
 
-                                                            fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tokens`, requestOptions)
-                                                                .then((response) => response.text())
-                                                                .then( function( result ){
-                                                                    result = JSON.parse( result );
+                                                            const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
+                                                            if( ! tokenUpdated ) {
+                                                                await new ToastsService().showErrorToast("An error has occurred. Please try again.");
 
-                                                                    setTokenDetails( result.data)
-                                                                })
-                                                                .catch((error) => console.error(error));
+                                                                return;
+                                                            }
 
-                                                            toast.success('Transaction Completed', {
-                                                                position: "top-right",
-                                                                autoClose: 5000,
-                                                                hideProgressBar: false,
-                                                                closeOnClick: true,
-                                                                pauseOnHover: true,
-                                                                draggable: true,
-                                                                progress: undefined,
-                                                                theme: "light",
-                                                            })
+                                                            setTokenDetails( tokenUpdated );
+
+                                                            await new ToastsService().showSuccessToast("Transaction Completed");
+
                                                         }else {
-                                                            toast.error('Transaction Canceled', {
-                                                                position: "top-right",
-                                                                autoClose: 5000,
-                                                                hideProgressBar: false,
-                                                                closeOnClick: true,
-                                                                pauseOnHover: true,
-                                                                draggable: true,
-                                                                progress: undefined,
-                                                                theme: "light",
-                                                            });
+                                                            await new ToastsService().showErrorToast("Transaction Canceled");
+
                                                         }
                                                     }}
                                                 >
-                                                    {pairingData?.accountIds[0] ? 'Place Trade' : 'Connect Wallet to Proceed'}
+                                                    { accountId ? 'Place Trade' : 'Connect Wallet to Proceed'}
                                                 </Button>
 
                                             </form>
@@ -350,88 +304,55 @@ function TokenDetails(props) {
                                                     <InputGroup.Text id="basic-addon2">{ tokenDetails?.ticker }</InputGroup.Text>
                                                 </InputGroup>
 
-                                                {/*<InputGroup className="mb-3">
-                                            <Form.Control
-                                                placeholder="Slippage"
-                                                aria-label="Slippage"
-                                                aria-describedby="basic-addon2"
-                                                name='sell_slippage'
-                                                onChange={ function( e ){
-                                                    setSellSlippage( e.target.value );
-                                                }}
-                                            />
-                                            <InputGroup.Text id="basic-addon2">%</InputGroup.Text>
-                                        </InputGroup> */}
-
                                                 <Button
                                                     type="submit"
                                                     className="btn-action"
-                                                    disabled={ !pairingData?.accountIds[0] }
+                                                    disabled={ ! accountId }
                                                     onClick={ async function(e){
                                                         e.preventDefault();
 
-                                                        let success = await executeSell( pairingData?.accountIds[0], sellAmount, tokenDetails?.tokenId );
-                                                        if( success && success.tiny_bar_amount ){
-                                                            // Update Db
-                                                            let new_supply = Number( tokenDetails?.bondingCurveSupply ) + Number( sellAmount );
-                                                            let new_hbar = Number( tokenDetails?.bondingCurveHbar ) - Number( success?.tiny_bar_amount / Math.pow(10, 8) );
+                                                        // Account for decimals in token transfer
+                                                        const tokenSellAmount = sellAmount * Math.pow( 10, 8 );
 
+                                                        let success = await executeSell( accountId, tokenSellAmount, tokenDetails?.tokenId );
+                                                        if( success && success?.amountY ){
+                                                           // Update Db
+                                                           let new_supply = Number( tokenDetails?.bondingCurveSupply ) + Number( tokenSellAmount );
+                                                           let new_hbar = Number( tokenDetails?.bondingCurveHbar ) - Number( success?.amountY );
 
-                                                            const myHeaders = new Headers();
-                                                            myHeaders.append("Content-Type", "application/json");
+                                                           const tokenService = await new TokenService(
+                                                               AccountId.fromString( accountId ),
+                                                               walletInterface
+                                                           );
 
-                                                            const raw = JSON.stringify({
-                                                                "token_id": tokenDetails?.tokenId,
-                                                                "bonding_curve_supply": new_supply.toString(),
-                                                                "bonding_curve_hbar": new_hbar.toString()
-                                                            });
+                                                           const raw = {
+                                                               "token_id": tokenDetails?.tokenId,
+                                                               "bonding_curve_supply": new_supply.toString(),
+                                                               "bonding_curve_hbar": new_hbar.toString()
+                                                           };
 
-                                                            const requestOptions = {
-                                                                method: "PUT",
-                                                                headers: myHeaders,
-                                                                body: raw,
-                                                                redirect: "follow"
-                                                            };
+                                                           const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
+                                                           if( ! tokenUpdated ) {
+                                                               await new ToastsService().showErrorToast("An error has occurred. Please try again.");
 
-                                                            fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tokens`, requestOptions)
-                                                                .then((response) => response.text())
-                                                                .then( function( result ){
-                                                                    result = JSON.parse( result );
+                                                               return;
+                                                           }
 
-                                                                    let progress_value = ( Number( result.data?.bondingCurveSupply ) / bonding_curve?.maxSaleSupply  );
+                                                           let progress_value = ( Number( tokenUpdated?.bondingCurveSupply ) / bonding_curve?.maxSaleSupply  );
 
-                                                                    setProgressBarValue( (1 - progress_value ) * 100 );
+                                                           setProgressBarValue( (1 - progress_value ) * 100 );
+                                                           setTokenDetails( tokenUpdated );
 
-                                                                    setTokenDetails( result.data)
-                                                                })
-                                                                .catch((error) => console.error(error));
+                                                           await new ToastsService().showSuccessToast("Transaction Completed");
 
+                                                           /*=========================*/
 
-                                                            toast.success('Transaction Completed', {
-                                                                position: "top-right",
-                                                                autoClose: 5000,
-                                                                hideProgressBar: false,
-                                                                closeOnClick: true,
-                                                                pauseOnHover: true,
-                                                                draggable: true,
-                                                                progress: undefined,
-                                                                theme: "light",
-                                                            })
-                                                        }else {
-                                                            toast.error('Transaction Canceled', {
-                                                                position: "top-right",
-                                                                autoClose: 5000,
-                                                                hideProgressBar: false,
-                                                                closeOnClick: true,
-                                                                pauseOnHover: true,
-                                                                draggable: true,
-                                                                progress: undefined,
-                                                                theme: "light",
-                                                            });
+                                                        } else {
+                                                            await new ToastsService().showErrorToast('Transaction Canceled');
                                                         }
                                                     }}
                                                 >
-                                                    {pairingData?.accountIds[0] ? 'Place Trade' : 'Connect Wallet to Proceed'}
+                                                    { accountId ? 'Place Trade' : 'Connect Wallet to Proceed'}
                                                 </Button>
 
                                             </form>
@@ -447,7 +368,7 @@ function TokenDetails(props) {
                                             <strong>Bonding Curve Values: </strong>
 
                                             <div style={{ marginTop: '5px'}}>
-                                                <strong>Bonding Curve Supply:</strong> { Number( tokenDetails?.bondingCurveSupply / Math.pow( 10, 8) ).toLocaleString('en-US', { minimumFractionDigits: 0 } )} (without 8 decimals)
+                                                <strong>Bonding Curve Supply:</strong> { Number( tokenDetails?.bondingCurveSupply / Math.pow( 10, 8) ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
                                                 <br/>
                                                 <strong>Bonding Curve HBAR:</strong> { Number( tokenDetails?.bondingCurveHbar ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
                                             </div>

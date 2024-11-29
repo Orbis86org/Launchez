@@ -4,13 +4,16 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import './App.scss'
 import ScrollToTop from "./ScrollToTop";
+import {AllWalletsProvider} from "./services/wallets/AllWalletsProvider";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
     <React.Fragment>
         <BrowserRouter>
         <ScrollToTop />
-            <App />
+            <AllWalletsProvider>
+                <App />
+            </AllWalletsProvider>
         </BrowserRouter>
     </React.Fragment>
 );

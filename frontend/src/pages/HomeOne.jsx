@@ -41,10 +41,7 @@ function HomeOne(props) {
                 fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tokens`, requestOptions)
                     .then((response) => response.text())
                     .then( function( result ){
-                        console.log( result )
                         result = JSON.parse( result );
-
-                        console.log( result.data )
 
                         setTokens( result.data )
                     })

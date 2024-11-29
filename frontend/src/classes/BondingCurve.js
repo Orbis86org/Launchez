@@ -7,7 +7,7 @@ class BondingCurve {
      */
     constructor() {
         this.initialSupply = 72000000000000000; // Initial supply of token X (720 million tokens with 8 decimals)
-        this.totalSupply = 70000000000000000; // Total supply of token X (700 million tokens with 8 decimals)
+        this.totalSupply = process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY; // Total supply of token X (700 million tokens with 8 decimals)
         this.maxSaleSupply = 56500000000000000; // Max tokens to sell normally (565 million tokens with 8 decimals)
         this.maxSaleSupplyWithLastTrade = 57500000000000000; // Max tokens to sell in the last large trade (575 million tokens with 8 decimals)
         this.b = 34300; // Initial liquidity of token Y (Hbar)
@@ -133,4 +133,4 @@ class BondingCurve {
     }
 }
 
-module.exports = BondingCurve;
+export default BondingCurve;

@@ -1,4 +1,4 @@
-import React , { useState , useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 
 import { Link , NavLink } from 'react-router-dom';
 import menus from '../../pages/menu';
@@ -17,74 +17,13 @@ import icon4 from '../../assets/images/flags/italy.jpg'
 import icon5 from '../../assets/images/flags/russia.jpg'
 // import Button from '../button';
 
-import {HashConnect } from 'hashconnect';
-
-import { LedgerId } from '@hashgraph/sdk';
-import Button from "../button";
-
-const appMetadata = {
-    name: "Launchez",
-    description: "<Your dapp description>",
-    icons: [""],
-    url: "https://launchez.orbis86.com"
-}
-
-let pairingString = '';
-let pairingData = null;
-let state = 'Disconnected';
-
-
-let hashconnect = new HashConnect( false );
-let initData = await hashconnect.init(appMetadata, process.env.REACT_APP_HEDERA_NETWORK, false );
-
-async function init() {
-
-    //register events
-    setUpHashConnectEvents();
-
-    let topic = initData.topic;
-    pairingString = initData.pairingString;
-
-    //Saved pairings will return here, generally you will only have one unless you are doing something advanced
-    pairingData = initData.savedPairings[0];
-
-    return initData;
-}
-
-function setUpHashConnectEvents() {
-    hashconnect.pairingEvent.on((newPairing) => {
-        pairingData = newPairing;
-
-        window.location.reload();
-    })
-
-    hashconnect?.disconnectionEvent?.on((data) => {
-        pairingData = null;
-    });
-
-    hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
-        state = connectionStatus;
-    })
-
-    hashconnect.foundExtensionEvent.once((walletMetadata) => {
-        //do something with metadata
-        // console.log('Wallet Extension Found');
-    })
-}
+import {useWalletInterface} from "../../services/wallets/useWalletInterface.ts";
+import {WalletConnectContext} from "../../contexts/WalletConnectContext.tsx";
+import {openWalletConnectModal} from "../../services/wallets/walletconnect/walletConnectClient.tsx";
 
 const Header = () => {
-    //initialize and use returned data
-    const [initData2, setInitData2 ] = useState( false )
     const [scroll, setScroll] = useState(false);
     useEffect(() => {
-            async function initHashpack() {
-                let data = await init();
-
-                setInitData2( data );
-            }
-
-            initHashpack();
-
         window.addEventListener("scroll", () => {
             setScroll(window.scrollY > 300);
         });
@@ -93,11 +32,6 @@ const Header = () => {
         }
     }, []);
 
-    useEffect(() => {
-        if( initData2 ){
-
-        }
-    }, [ initData2 ]);
 
     const [menuActive, setMenuActive] = useState(null);
 
@@ -109,6 +43,16 @@ const Header = () => {
     const handleDropdown = index => {
         setActiveIndex(index);
     };
+
+    const { setAccountId } = useContext( WalletConnectContext )
+    const { accountId, walletInterface } = useWalletInterface();
+    useEffect(() => {
+        const account_id = localStorage.getItem( 'hederaAccountId' );
+
+        if( account_id ){
+            setAccountId( account_id );
+        }
+    }, [])
 
     return (
         <header id="header_main" className={`header ${scroll ? 'is-fixed' : ''}`}>
@@ -460,21 +404,29 @@ const Header = () => {
                         <div className={`mobile-button ${menuActive ? 'active' : ''}`} onClick={handleMenuActive}><span></span></div>
 
                         {/* Wallet Connect */}
-                        <div className="wallet">
+                        <a
+                            href='#'
+                            style={{ cursor: 'pointer' }}
+                            className="wallet"
+                            onClick={async function () {
 
-                            {/* <Link to="/wallet"> Wallet </Link> */}
-                        </div>
+                                if (accountId) {
+                                    try{
+                                        walletInterface.disconnect();
+                                    }catch ( e ){
 
-                        <a href='#'
-                           onClick={ async function (e) {
-                               e.preventDefault();
-                               // Disconnect existing
-                               hashconnect.disconnect( initData2?.topic );
+                                    }
+                                } else {
+                                    const connected = await openWalletConnectModal();
 
-                               // Open HashPack Modal
-                               hashconnect.connectToLocalWallet();
-                           }}
-                        >{ initData2 && initData2?.savedPairings[0]?.accountIds[0]? initData2?.savedPairings[0]?.accountIds[0] : 'Connect Wallet'}</a>
+                                }
+                            }}
+
+                        >
+                            {accountId ? `${accountId}` :
+                                'Connect Wallet'
+                            }
+                        </a>
 
 
                         <Dropdown className='user'  style={{ display: 'none' }}>
@@ -511,7 +463,6 @@ const Header = () => {
                                 </Dropdown.Menu>
                             </Dropdown>
 
-
                     </div>
                     </div>
                 </div>
@@ -523,6 +474,3 @@ const Header = () => {
 }
 
 export default Header;
-export { hashconnect };
-export { initData };
-export {pairingData };
