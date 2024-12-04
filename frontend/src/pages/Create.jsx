@@ -30,8 +30,12 @@ function Create(props) {
     const [name, setName ] = useState('');
     const [ticker, setTicker ] = useState('');
     const [description, setDescription] = useState('');
-
+    const [image, setImage] = useState(null);
     const { accountId, walletInterface } = useWalletInterface();
+    
+    const handleImageChange = (e) => {
+        setImage(e.target.files[0]);
+    };
 
 
     return (
@@ -51,6 +55,7 @@ function Create(props) {
                                 <form
                                     id='token-creation'
                                     ref={ form => setForm( form )}
+                                    encType='multipart/form-data'
                                 >
                                     <div className="form-group">
                                         <label>Token Name</label>
@@ -88,14 +93,24 @@ function Create(props) {
                                         ></textarea>
                                     </div>
 
+                                    <div className="form-group">
+                                        <label>Upload Image</label>
+                                        <input type="file" className="form-control" onChange={handleImageChange} />
+                                    </div>
+
                                     <button
                                         type="submit"
                                         className="btn-action"
                                         onClick={ async function( e ){
                                             e.preventDefault();
 
+                                            const imageFile = document.querySelector('input[type="file"]').files[0]; // Get the image file
+                                            const tokenService = new TokenService(AccountId.fromString(accountId), walletInterface);
+                                            const tokenCreated = await tokenService.deployToken(name, ticker, name + " Token Launch", description, imageFile);
+
+
                                             // Step 1: Launch the Token
-                                            const tokenCreated = await new TokenService(
+                                            /* const tokenCreated = await new TokenService(
                                                 AccountId.fromString( accountId ),
                                                 walletInterface
                                             ).deployToken(
@@ -103,7 +118,7 @@ function Create(props) {
                                                 ticker,
                                                 name + " Token Launch",
                                                 description
-                                            )
+                                            ) */
 
                                             if( ! tokenCreated ) {
                                                 await new ToastsService().showErrorToast("An error has occurred. Please try again.");

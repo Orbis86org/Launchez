@@ -213,7 +213,7 @@ function TokenDetails(props) {
                                 {/* Chart and Forum */}
                                 <div className="col-8">
                                     <CandleStickChart />
-                                    <DiscussionForum />
+                                    <DiscussionForum tokenId={tokenDetails?.tokenId}/>
                                 </div>
 
                                 {/* Buy and Sell */}

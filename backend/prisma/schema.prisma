@@ -25,6 +25,27 @@ model Token {
   bondingCurveHbar   String?  @map("bonding_curve_hbar")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
+  image           String? // Optional field for the image path
 
   @@map("tokens")
+}
+
+model Threads {
+  id        Int      @id @default(autoincrement())
+  token_id   String
+  title     String
+  content   String
+  author    String
+  created_at DateTime @default(now())
+  replies   Replies[]
+}
+
+model Replies {
+  id        Int      @id @default(autoincrement())
+  thread_id  Int
+  content   String
+  author    String
+  created_at DateTime @default(now())
+
+  threads    Threads   @relation(fields: [thread_id], references: [id])
 }

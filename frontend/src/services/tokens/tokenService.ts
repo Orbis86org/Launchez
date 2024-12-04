@@ -24,7 +24,7 @@ class TokenService {
     /**
      * Deploy a token and return token details
      */
-    async deployToken( name: string, symbol: string, memo: string, description: string) {
+    async deployToken( name: string, symbol: string, memo: string, description: string, image: File) {
         try {
             const transactionId = await this
                 .walletInterface
@@ -62,7 +62,7 @@ class TokenService {
             };
 
             // Save deployed token in DB
-            return await this.saveTokenDetailsInDb( raw, 'POST' );
+            return await this.saveTokenDetailsInDb( raw, image, 'POST' );
 
         } catch (error) {
             console.error("Error deploying token: ", error);
@@ -79,19 +79,32 @@ class TokenService {
      * @param method
      * @returns {Promise<Object>} - The backend response
      */
-    async saveTokenDetailsInDb( tokenData: object, method: string): Promise<boolean|Object> {
-        const requestOptions = {
+    async saveTokenDetailsInDb( tokenData: object, image: File, method: string): Promise<boolean|Object> {
+        /* const requestOptions = {
             method: method,
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(tokenData),
             redirect: "follow",
-        };
+        }; */
 
         try {
+            const formData = new FormData();
+
+            for (const key in tokenData) {
+                formData.append(key, tokenData[key as keyof typeof tokenData]);
+            }
+            if (image) {
+                formData.append("image", image); // Append the image
+            }
+
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
-            const response = await fetch(`${backendUrl}/api/tokens`, requestOptions);
+            const response = await fetch(`${backendUrl}/api/tokens`, {
+                method: method,
+                body: formData,
+                redirect: "follow",
+            });
             const result = await response.json();
 
             if (result?.success) {
