@@ -119,16 +119,31 @@ class WalletConnectWallet implements WalletInterface {
     return AccountId.fromString(this.getSigner().getAccountId().toString());
   }
 
-  async transferHBAR(toAddress: AccountId, amount: number) {
-    const transferHBARTransaction = new TransferTransaction()
-        .addHbarTransfer(this.getAccountId(), -amount)
-        .addHbarTransfer(toAddress, amount);
+  /**
+   * Transfer HBAR from browser wallet to treasury wallet
+   *
+   * @param fromAddress
+   * @param hbarAmount
+   * @param memo
+   */
+  async transferHBAR(fromAddress: AccountId, hbarAmount: number, memo: string) {
+    try{
+      // Convert the Hbar to Tinybar
+      const tinybarAmount = Math.round(hbarAmount * 100000000); // Round to avoid fractional tinybars
 
-    const signer = this.getSigner();
-    await transferHBARTransaction.freezeWithSigner(signer);
-    const txResult = await transferHBARTransaction.executeWithSigner(signer);
+      const transferHBARTransaction = new TransferTransaction()
+          .addHbarTransfer(process.env.REACT_APP_HEDERA_ACCOUNT_ID, Hbar.fromTinybars( tinybarAmount ) )
+          .addHbarTransfer(fromAddress, Hbar.fromTinybars( - tinybarAmount ))
+          .setTransactionMemo( memo );
 
-    return txResult ? txResult.transactionId : null;
+      const signer = this.getSigner();
+      await transferHBARTransaction.freezeWithSigner(signer);
+      const txResult = await transferHBARTransaction.executeWithSigner(signer);
+
+      return txResult ? txResult.transactionId : null;
+    }catch (e) {
+      return null;
+    }
   }
 
   async transferFungibleToken(toAddress: AccountId, tokenId: TokenId, amount: number) {
@@ -186,7 +201,12 @@ class WalletConnectWallet implements WalletInterface {
     });
   }
 
-  async executeTokenCreateTransaction(name: string, symbol: string, memo: string): Promise<TransactionId | string | null> {
+  async executeTokenCreateTransactionWithFees(name: string, symbol: string, memo: string, accountId: AccountId): Promise<TransactionId | string | null> {
+    const paidTokenCreationFee = await this.transferHBAR( accountId, parseInt( process.env.REACT_APP_HEDERA_TOKEN_CREATION_FEE ), 'Token Creation Fee' )
+    if( ! paidTokenCreationFee ){
+      return null;
+    }
+
     /*
      * The transaction also has to be signed by the treasury wallet since its funds/tokens are
      * being deducted. If not done, you get INVALID_SIGNATURE error
@@ -197,8 +217,8 @@ class WalletConnectWallet implements WalletInterface {
         .setTokenName(name)
         .setTokenSymbol(symbol)
         .setTreasuryAccountId( process.env.REACT_APP_HEDERA_ACCOUNT_ID )
-        .setMaxSupply( process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY)
-        .setInitialSupply(process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY)
+        .setMaxSupply( process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY)
+        .setInitialSupply(process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY)
         .setSupplyType(TokenSupplyType.Finite)
         .setDecimals(8)
         .setTokenMemo(memo)

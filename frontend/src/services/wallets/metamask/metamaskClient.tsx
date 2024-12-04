@@ -196,7 +196,7 @@ class MetaMaskWallet implements WalletInterface {
     alert("Please disconnect using the Metamask extension.")
   }
 
-  executeTokenCreateTransaction(name: string, symbol: string, memo: string): Promise<TransactionId | string | null> {
+  executeTokenCreateTransactionWithFees(name: string, symbol: string, memo: string): Promise<TransactionId | string | null> {
     return Promise.resolve(undefined);
   }
 

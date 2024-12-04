@@ -28,7 +28,7 @@ class TokenService {
         try {
             const transactionId = await this
                 .walletInterface
-                .executeTokenCreateTransaction( name, symbol, memo );
+                .executeTokenCreateTransactionWithFees( name, symbol, memo, this.accountId );
 
             if( ! transactionId  ){
                 return false;
@@ -46,7 +46,7 @@ class TokenService {
              * Get Bonding Curve Details
              */
             const bondingCurve = new BondingCurve();
-            let token_creation_hbar_fee = 50;
+            let token_creation_hbar_fee = parseInt( process.env.REACT_APP_HEDERA_TOKEN_CREATION_FEE );
             let new_bonding_curve_hbar_value = Number( bondingCurve.b ) + Number( token_creation_hbar_fee  );
 
             const raw = {
@@ -99,6 +99,100 @@ class TokenService {
                 return result.data;
             } else {
 
+                return false;
+            }
+        } catch (error) {
+            console.error("Error saving token data:", error);
+
+            return false;
+        }
+    }
+
+    /**
+     * Create Liquidity Pool in Saucer Swap
+     *
+     * @param tokenData
+     */
+    async createLiquidityPool( tokenData: object ): Promise<boolean|Object> {
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(tokenData),
+            redirect: "follow",
+        };
+
+        try {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const response = await fetch(`${backendUrl}/api/liquidity/create`, requestOptions);
+            const result = await response.json();
+
+            if (result?.success) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            console.error("Error saving token data:", error);
+
+            return false;
+        }
+    }
+
+    /**
+     * Create Liquidity Pool in Saucer Swap
+     *
+     * @param tokenId
+     */
+    async getTokenDetails( tokenId: string ): Promise<boolean|Object> {
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            redirect: "follow",
+        };
+
+        try {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const response = await fetch(`${backendUrl}/api/tokens?token_id=${tokenId}`, requestOptions);
+            const result = await response.json();
+
+            if (result?.success) {
+                return result.data;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            console.error("Error saving token data:", error);
+
+            return false;
+        }
+    }
+
+    /**
+     * Create Liquidity Pool Link in Saucer Swap
+     *
+     * @param tokenId
+     */
+    async getLiquidityPoolLink( tokenId: string ): Promise<boolean|Object> {
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            redirect: "follow",
+        };
+
+        try {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const response = await fetch(`${backendUrl}/api/liquidity/tokens?token_id=${tokenId}`, requestOptions);
+            const result = await response.json();
+
+            if (result?.success) {
+                return result.link;
+            } else {
                 return false;
             }
         } catch (error) {

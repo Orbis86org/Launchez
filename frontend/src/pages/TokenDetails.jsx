@@ -31,9 +31,48 @@ TokenDetails.propTypes = {
 
 function TokenDetails(props) {
 
+    const [buyAmount, setBuyAmount] = useState(0);
+    const[buySlippage, setBuySlippage] = useState(0);
+
+    const [sellAmount, setSellAmount] = useState(0);
+    const[sellSlippage, setSellSlippage] = useState(0);
+
+    const { accountId, walletInterface } = useWalletInterface();
+
     const [tokenDetails, setTokenDetails] = useState( false );
     const [fetchingTokenDetails, setFetchingTokenDetails] = useState( false )
     useEffect(  () => {
+
+        /*
+        async function fetchData() {
+            if( ! tokenDetails ){
+                // Get token details from API.
+                // Get token ID from URL
+                const queryString = window.location.search;
+
+                const urlParams = new URLSearchParams(queryString);
+
+                let query_token_id = urlParams.get('token-id');
+
+                const tokenService = await new TokenService(
+                    AccountId.fromString( accountId ),
+                    walletInterface
+                );
+
+                const tokenDetails = tokenService.getTokenDetails( query_token_id );
+                if( ! tokenDetails ){
+                    return;
+                }
+
+                setTokenDetails( tokenDetails );
+
+
+
+            }
+        }
+
+         */
+
         async function fetchData() {
             if( ! tokenDetails ){
                 // Get token details from API.
@@ -69,9 +108,9 @@ function TokenDetails(props) {
         fetchData();
     }, []);
 
-    const bonding_curve = new BondingCurve(
+    const bondingCurve = new BondingCurve(
         72000000000000000,
-        process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY,
+        process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY,
         Number( tokenDetails?.bondingCurveSupply ),
         57500000000000000,
         Number( tokenDetails?.bondingCurveHBAR )
@@ -80,7 +119,7 @@ function TokenDetails(props) {
     const [progressBarValue, setProgressBarValue ] = useState(0);
     useEffect(  () => {
         if( tokenDetails ){
-            let progress_value = ( Number( tokenDetails?.bondingCurveSupply ) / bonding_curve?.maxSaleSupply  );
+            let progress_value = ( Number( tokenDetails?.bondingCurveSupply ) / bondingCurve?.maxSaleSupply  );
 
             setProgressBarValue( (1 - progress_value ) * 100 );
         }
@@ -101,7 +140,7 @@ function TokenDetails(props) {
             // Simulate the buy to get the amount of token X and check for max supply limits
             let bonding_curve = new BondingCurve(
                 72000000000000000,
-                process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY,
+                process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY,
                 Number( tokenDetails?.bondingCurveSupply ),
                 57500000000000000,
                 Number( tokenDetails?.bondingCurveHBAR )
@@ -151,7 +190,7 @@ function TokenDetails(props) {
 
         try {
 
-            const { finalPrice, amountY, slippage } = bonding_curve.simulateSell(amountX);
+            const { finalPrice, amountY, slippage } = bondingCurve.simulateSell(amountX);
 
 
             // Create a transaction to transfer token X from seller to treasury, and Hbar (Y) from treasury to seller
@@ -189,13 +228,6 @@ function TokenDetails(props) {
     }
 
 
-    const [buyAmount, setBuyAmount] = useState(0);
-    const[buySlippage, setBuySlippage] = useState(0);
-
-    const [sellAmount, setSellAmount] = useState(0);
-    const[sellSlippage, setSellSlippage] = useState(0);
-
-    const { accountId, walletInterface } = useWalletInterface();
 
     return (
         <>
@@ -249,19 +281,20 @@ function TokenDetails(props) {
 
                                                         let success = await executeBuy( accountId, buyAmount, tokenDetails?.tokenId );
                                                         if( success && success?.amountX ){
-                                                            // Update Db
-                                                            let new_supply = Number( tokenDetails?.bondingCurveSupply ) - success?.amountX;
-                                                            let new_hbar = Number( tokenDetails?.bondingCurveHbar ) + Number( buyAmount );
 
-                                                            const tokenService = await  new TokenService(
+                                                            // Update Db
+                                                            let newSupply = Number( tokenDetails?.bondingCurveSupply ) - success?.amountX;
+                                                            let newHbar = Number( tokenDetails?.bondingCurveHbar ) + Number( buyAmount );
+
+                                                            const tokenService = await new TokenService(
                                                                 AccountId.fromString( accountId ),
                                                                 walletInterface
                                                             );
 
                                                             const raw = {
                                                                 "token_id": tokenDetails?.tokenId,
-                                                                "bonding_curve_supply": new_supply.toString(),
-                                                                "bonding_curve_hbar": new_hbar.toString()
+                                                                "bonding_curve_supply": newSupply.toString(),
+                                                                "bonding_curve_hbar": newHbar.toString()
                                                             };
 
                                                             const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
@@ -271,9 +304,56 @@ function TokenDetails(props) {
                                                                 return;
                                                             }
 
+                                                            let progressValue = ( Number( tokenUpdated?.bondingCurveSupply ) / bondingCurve?.maxSaleSupply  );
+                                                            const percentageSold = (1 - progressValue ) * 100;
+
+                                                            setProgressBarValue( percentageSold );
                                                             setTokenDetails( tokenUpdated );
 
+
                                                             await new ToastsService().showSuccessToast("Transaction Completed");
+
+                                                            /**
+                                                             * Check if we should create a Liquidity Pool
+                                                             *
+                                                             * This is only done if the supply of the token is greater than or equal to the BondingCurve's
+                                                             * maxSaleSupply value - Max tokens to sell normally (565 million tokens with 8 decimals)
+                                                             */
+
+                                                            // Check if it is more than 80% that has been 'sold' or 'supplied' to the public
+                                                            console.log("Percentage Sold: ", percentageSold )
+                                                            if( percentageSold >= 80 ) {
+                                                                const liquidityPoolCreated = await tokenService.createLiquidityPool({
+                                                                    token_id: tokenUpdated?.tokenId,
+                                                                    token_desired: bondingCurve?.totalSupply - bondingCurve?.maxSaleSupply, // 700 million less 565 million = 135 million
+                                                                    token_min: bondingCurve?.totalSupply - newSupply, // Actual remaining - Less than 135 million
+                                                                });
+
+                                                                console.log('Liquidity Pool Created: ', liquidityPoolCreated )
+                                                                if( liquidityPoolCreated ) {
+
+                                                                    // Get Liquidity Pool link
+                                                                    const link = tokenService.getLiquidityPoolLink( tokenUpdated?.tokenId );
+                                                                    if( ! link ){
+                                                                        return;
+                                                                    }
+
+                                                                    // Update Token Details With New Link
+                                                                    const raw = {
+                                                                        token_id: tokenDetails?.tokenId,
+                                                                        liquidityPoolLink: link,
+                                                                    };
+
+                                                                    const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
+                                                                    if( ! tokenUpdated ) {
+                                                                        return;
+                                                                    }
+
+                                                                    await new ToastsService().showSuccessToast("A new liquidity pool has just been created on SaucerSwap");
+                                                                }
+
+                                                            }
+
 
                                                         }else {
                                                             await new ToastsService().showErrorToast("Transaction Canceled");
@@ -317,8 +397,8 @@ function TokenDetails(props) {
                                                         let success = await executeSell( accountId, tokenSellAmount, tokenDetails?.tokenId );
                                                         if( success && success?.amountY ){
                                                            // Update Db
-                                                           let new_supply = Number( tokenDetails?.bondingCurveSupply ) + Number( tokenSellAmount );
-                                                           let new_hbar = Number( tokenDetails?.bondingCurveHbar ) - Number( success?.amountY );
+                                                           let newSupply = Number( tokenDetails?.bondingCurveSupply ) + Number( tokenSellAmount );
+                                                           let newHbar = Number( tokenDetails?.bondingCurveHbar ) - Number( success?.amountY );
 
                                                            const tokenService = await new TokenService(
                                                                AccountId.fromString( accountId ),
@@ -327,8 +407,8 @@ function TokenDetails(props) {
 
                                                            const raw = {
                                                                "token_id": tokenDetails?.tokenId,
-                                                               "bonding_curve_supply": new_supply.toString(),
-                                                               "bonding_curve_hbar": new_hbar.toString()
+                                                               "bonding_curve_supply": newSupply.toString(),
+                                                               "bonding_curve_hbar": newHbar.toString()
                                                            };
 
                                                            const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
@@ -338,9 +418,9 @@ function TokenDetails(props) {
                                                                return;
                                                            }
 
-                                                           let progress_value = ( Number( tokenUpdated?.bondingCurveSupply ) / bonding_curve?.maxSaleSupply  );
+                                                           let progressValue = ( Number( tokenUpdated?.bondingCurveSupply ) / bondingCurve?.maxSaleSupply  );
 
-                                                           setProgressBarValue( (1 - progress_value ) * 100 );
+                                                           setProgressBarValue( (1 - progressValue ) * 100 );
                                                            setTokenDetails( tokenUpdated );
 
                                                            await new ToastsService().showSuccessToast("Transaction Completed");
@@ -362,15 +442,15 @@ function TokenDetails(props) {
                                     {/* Bonding Curve Progress */}
                                     <div className="pt-4">
                                         <h6>Bonding Curve Progress</h6>
-                                        <ProgressBar now={ (progressBarValue + 77).toLocaleString('en-US', { minimumFractionDigits: 2 } ) } animated labels={ `${ ( progressBarValue + 77 ).toLocaleString('en-US', { minimumFractionDigits: 2 } ) } %` }/>
+                                        <ProgressBar now={ (progressBarValue ).toLocaleString('en-US', { minimumFractionDigits: 2 } ) } animated label={ `${ ( progressBarValue ).toLocaleString('en-US', { minimumFractionDigits: 2 } ) } %` } min={ 30 }/>
 
                                         <div style={{ marginTop: '20px'}}>
                                             <strong>Bonding Curve Values: </strong>
 
                                             <div style={{ marginTop: '5px'}}>
-                                                <strong>Bonding Curve Supply:</strong> { Number( tokenDetails?.bondingCurveSupply / Math.pow( 10, 8) ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
+                                                <strong>Token Supply:</strong> { Number( tokenDetails?.bondingCurveSupply / Math.pow( 10, 8) ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
                                                 <br/>
-                                                <strong>Bonding Curve HBAR:</strong> { Number( tokenDetails?.bondingCurveHbar ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
+                                                <strong>HBAR:</strong> { Number( tokenDetails?.bondingCurveHbar ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
                                             </div>
                                         </div>
 

@@ -1,4 +1,38 @@
 // src/classes/BondingCurve.js
+/**
+ * Why Use a Virtual Supply Greater Than the Actual Supply?
+ * The bonding curve formula used is:
+ *
+ * k=va×vb
+ *
+ * Where:
+ *
+ * k is a constant.
+ * va is the virtual token supply.
+ * vb is the virtual HBAR collateral.
+ *
+ * Reasons for the Extra 20 Million Virtual Tokens:
+ *
+ * Smooth Price Increase:
+ *
+ * Initial Price Setting: By using a larger virtual supply, the initial price of the token is lower, making it more accessible to early buyers.
+ * Gradual Price Rise: As tokens are bought, the price increases more smoothly, preventing sharp spikes.
+ * Mathematical Necessity:
+ *
+ * Modeling Purposes: The virtual supply aids in achieving the desired price dynamics within the bonding curve model.
+ * Constant Product: Ensures the constant
+ * 𝑘
+ * k remains balanced as tokens are bought and sold.
+ * Fairness and Accessibility:
+ *
+ * Early Participation: Encourages early adoption by offering tokens at a lower price initially.
+ * Avoiding Market Shock: Prevents sudden price jumps that could deter new buyers.
+ *
+ * What Happens to the Extra 20 Million Tokens?
+ * They Are Not Minted: The 20 million extra tokens are never created on the blockchain.
+ * No Actual Distribution: They are not distributed to anyone—neither the team nor the public.
+ * Purely Theoretical: They exist only within the mathematical framework of the bonding curve to facilitate price calculations.
+ */
 
 class BondingCurve {
     /**
@@ -6,9 +40,9 @@ class BondingCurve {
      * Initializes with a fixed supply of 720 million tokens and 34,300 Hbar liquidity.
      */
     constructor() {
-        this.initialSupply = 72000000000000000; // Initial supply of token X (720 million tokens with 8 decimals)
-        this.totalSupply = process.env.REACT_APP_HEDERA_TOKEN_MAX_SUPPLY; // Total supply of token X (700 million tokens with 8 decimals)
-        this.maxSaleSupply = 56500000000000000; // Max tokens to sell normally (565 million tokens with 8 decimals)
+        this.initialSupply = process.env.REACT_APP_HEDERA_TOKEN_INITIAL_SUPPLY; // Initial supply of token X (720 million tokens with 8 decimals) - Virtual Supply
+        this.totalSupply = process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY; // Total supply of token X (700 million tokens with 8 decimals)
+        this.maxSaleSupply = process.env.REACT_APP_HEDERA_TOKEN_MAX_SALE_SUPPLY; // Max tokens to sell normally (565 million tokens with 8 decimals)
         this.maxSaleSupplyWithLastTrade = 57500000000000000; // Max tokens to sell in the last large trade (575 million tokens with 8 decimals)
         this.b = 34300; // Initial liquidity of token Y (Hbar)
         this.k = this.initialSupply * this.b; // Constant k = initial supply * initial liquidity
