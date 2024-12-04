@@ -1010,7 +1010,7 @@ body[data-magic-cursor=hide] .mouse-cursor {
   }
 }
 @media only screen and (max-width: 767px) {
-  .banner .banner__image img {
+  .banner .banner__image img, .download .banner__image img {
     width: 100%;
   }
 }
@@ -2082,7 +2082,7 @@ body[data-magic-cursor=hide] .mouse-cursor {
 }
 
 .download {
-  padding: 97px 0 0;
+  /*padding: 97px 0 0;*/
   background: var(--surface);
 }
 .download .download__image {

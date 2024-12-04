@@ -212,7 +212,7 @@ function DiscussionForum({ tokenId }) {
                         </Button>
                     </Form>
 
-                    <div className="discussion-container">
+                    {threads?.length > 0 && <div className="discussion-container">
                         {threads ? threads?.map((thread) => (
                             <Card key={thread.id} className="mb-4">
                                 <Card.Body>
@@ -258,6 +258,7 @@ function DiscussionForum({ tokenId }) {
                             </Card>
                         )) : <h1> No data found!</h1> }
                     </div>
+                }
                 </Col>
             </Row>
         </Container>

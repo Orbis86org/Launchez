@@ -211,13 +211,12 @@ function TokenDetails(props) {
                                 </div>
 
                                 {/* Chart and Forum */}
-                                <div className="col-8">
+                                <div className="col-md-8 col-xs-12">
                                     <CandleStickChart />
-                                    <DiscussionForum tokenId={tokenDetails?.tokenId}/>
                                 </div>
 
                                 {/* Buy and Sell */}
-                                <div className="col-4">
+                                <div className="col-md-4 col-xs-12">
                                     <Tabs
                                         defaultActiveKey="buy"
                                         id="token-form"
@@ -386,6 +385,13 @@ function TokenDetails(props) {
                                         <SocialIcon url="https://telegram.org" />
                                     </div>
 
+                                </div>
+                            </div>
+
+                            <div className='row'>
+                                {/* Chart and Forum */}
+                                <div className="col-md-8 col-xs-12">
+                                    <DiscussionForum tokenId={tokenDetails?.tokenId}/>
                                 </div>
                             </div>
                         </div>

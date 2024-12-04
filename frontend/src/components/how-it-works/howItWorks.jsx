@@ -57,7 +57,7 @@ function HowItWorks(props) {
                             </p>
 
                             <div className='row d-flex align-items-center'>
-                                <div className='col-6'>
+                                <div className="col-xl-6 col-md-12">
                                     <ul className="list">
 
                                         {
@@ -72,11 +72,13 @@ function HowItWorks(props) {
                                                 </li>
                                             ))
                                         }
-                                    </ul>
+                                </ul>
                                 </div>
 
-                                <div className='col-6'>
-                                    <img src={howitworks} alt="Launchez" width={750} />
+                                <div className="col-xl-6 col-md-12">
+                                    <div className="banner__image">
+                                        <img src={howitworks} alt="Launchez" width={750} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
