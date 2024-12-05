@@ -99,10 +99,10 @@ function DiscussionForum({ tokenId }) {
                 const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/threads`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tokenId, ...newThread }),
+                    body: JSON.stringify({ tokenId, author: accountId ?? 'user', ...newThread }),
                 });
                 const data = await response.json();
-                setThreads((prev) => [...prev, { ...newThread, id: data.id, author: accountId ?? 'user', date: new Date().toLocaleDateString(), replies: [] }]);
+                setThreads((prev) => [...prev, { ...newThread, id: data.id, author: accountId ?? 'user', created_at: new Date().toISOString(), replies: [] }]);
                 setNewThread({ title: '', content: '' });
             } catch (error) {
                 console.error('Error creating thread:', error);
@@ -115,6 +115,12 @@ function DiscussionForum({ tokenId }) {
         setShowReplyForm(id);
         setReplyData({ threadId: id, reply: '' });
     };
+
+    const handleCancelReplyForm = (id) => {
+        setShowReplyForm(null);
+        setReplyData({});
+    };
+
 
     const handleReplyChange = (e) => {
         const { value } = e.target;
@@ -216,18 +222,28 @@ function DiscussionForum({ tokenId }) {
                         {threads ? threads?.map((thread) => (
                             <Card key={thread.id} className="mb-4">
                                 <Card.Body>
-                                    <Card.Title className="text-primary" color="0d5dfd">{thread.title}</Card.Title>
-                                    <Card.Subtitle className="mb-2 text-muted">
+                                    <Card.Text className="text-primary responsive-title" color="0d5dfd">{thread.title}</Card.Text>
+                                    <Card.Text className="mb-2 text-muted responsive-date-text">
                                         Posted by {thread.author} on {convertDate(thread.created_at)}
-                                    </Card.Subtitle>
+                                    </Card.Text>
                                     <Card.Text>{thread.content}</Card.Text>
-                                    <Button
-                                        variant="primary"
-                                        className="mt-2"
-                                        onClick={() => handleShowReplyForm(thread.id)}
-                                    >
-                                        {showReplyForm === thread.id ? 'Cancel' : 'Reply'}
+                                    {showReplyForm === thread.id ? 
+                                        <Button
+                                            variant="primary"
+                                            className="mt-2"
+                                            onClick={() => handleCancelReplyForm(thread.id)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        : 
+                                        <Button
+                                            variant="primary"
+                                            className="mt-2"
+                                            onClick={() => handleShowReplyForm(thread.id)}
+                                        >
+                                        Reply
                                     </Button>
+                                    }
                                     {showReplyForm === thread.id && (
                                         <Form className="mt-3">
                                             <Form.Group controlId="formReplyContent">

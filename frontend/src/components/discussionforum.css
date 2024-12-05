@@ -39,6 +39,25 @@
     font-weight: bold;
 }
 
+.responsive-title {
+    font-size: 16px; /* Default for mobile screens */
+    font-weight: bold;
+
+    @media (min-width: 992px) { /* Media query for laptops and larger */
+        font-size: 24px;
+    }
+}
+
+.responsive-date-text {
+    font-size: 12px; /* Default for mobile screens */
+    font-weight: bold;
+
+    @media (min-width: 992px) { /* Media query for laptops and larger */
+        font-size: 16px;
+    }
+}
+
+
 .card-subtitle {
     font-size: 0.9rem;
     color: #6c757d;
