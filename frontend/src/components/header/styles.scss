@@ -579,3 +579,25 @@
     display: block;
   }
 }
+
+td.token_image {
+  text-align: center;
+  width: 100px;
+
+  img {
+    width: 50px; /* Adjust size as needed */
+    height: 50px; /* Ensure it matches the width for a circle */
+    border-radius: 50%; /* Makes the element circular */
+    object-fit: cover; /* Ensures the image is not stretched */
+    border: 2px solid #0d5dfd; /* Optional: Adds a border */
+  }
+}
+
+img.token_image_detail{
+    width: 6rem; /* Adjust size as needed */
+    height: 6rem; /* Ensure it matches the width for a circle */
+    border-radius: 50%; /* Makes the element circular */
+    object-fit: cover; /* Ensures the image is not stretched */
+    border: 2px solid #0d5dfd; /* Optional: Adds a border */
+    margin-bottom: 0.5rem;
+}

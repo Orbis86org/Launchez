@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const { PrismaClient } = require('@prisma/client');
 const cors = require('cors');
 const multer = require('multer');
+const path = require('path');
 
 const PORT = process.env.PORT || 3080;
 
@@ -19,10 +20,14 @@ const prisma = new PrismaClient();
 // Set up multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, './uploads/'); // Save files in the 'uploads' directory
+		const uploadPath = path.join(__dirname, 'uploads');
+		cb(null, uploadPath); // Store images in the 'uploads' folder
+        //cb(null, './uploads/'); // Save files in the 'uploads' directory
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname); // Use unique filenames
+        //cb(null, Date.now() + '-' + file.originalname); // Use unique filenames
+		const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
     },
 });
 const upload = multer({ storage });
@@ -31,13 +36,14 @@ const upload = multer({ storage });
 /**
  * Token API
  */
-app.post("/api/tokens", async (req, res) => {
+app.post("/api/tokens", upload.single('image'), async (req, res) => {
+	console.log("Comn to here POst, ", req.body)
 	try{
 		let data = req.body;
-		const imagePath = req.file ? req.file.path : null;
-		console.log( data );
+		//const imagePath = req.file ? req.file.path : null;
+		const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+		console.log( {data, imagePath} );
 
-		const prisma = new PrismaClient();
 		let token = await prisma.token.create({
 			data: {
 				name: data.name,
@@ -97,6 +103,7 @@ app.get("/api/tokens", async (req, res) => {
     }
 });
 app.put("/api/tokens", async (req, res) => {
+	console.log("Comn to here Put, ", {req})
 	try{
 		let data = req.body;
 
@@ -189,6 +196,8 @@ app.post('/api/replies', async (req, res) => {
     }
 });
 
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.listen(PORT, () => {
 	console.log(`Server listening on ${PORT}`);

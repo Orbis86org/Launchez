@@ -78,6 +78,7 @@ function Coinlist01(props) {
                                         <table className="table">
                                             <thead>
                                                 <tr>
+                                                    <th scope="col"></th>
                                                     <th scope="col">Name</th>
                                                     <th scope="col">Ticker</th>
                                                     <th scope="col">Token ID</th>
@@ -90,6 +91,9 @@ function Coinlist01(props) {
                                                 {
                                                     dataCoin?.map(idx => (
                                                         <tr key={idx.id}>
+                                                            <td className="token_image">
+                                                                {idx.image && <img src={`${process.env.REACT_APP_BACKEND_URL}/${idx.image.replace(/\\/g, '/')}`} alt={idx.name} />}
+                                                            </td>
                                                             <td>
                                                                 <Link to={`/token?token-id=${idx.tokenId}`}>
                                                                     {/*<img src={idx.icon} alt="rockie" />*/}

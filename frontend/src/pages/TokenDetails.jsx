@@ -206,6 +206,7 @@ function TokenDetails(props) {
                         <div className="container">
                             <div className="row">
                                 <div className="block-text center">
+                                    {tokenDetails.image && <img className="token_image_detail" src={`${process.env.REACT_APP_BACKEND_URL}/${tokenDetails.image.replace(/\\/g, '/')}`} alt={tokenDetails.name} />}
                                     <h3 className="heading">Token { tokenDetails?.name } - { tokenDetails?.tokenId }</h3>
                                     <hr/>
                                 </div>
