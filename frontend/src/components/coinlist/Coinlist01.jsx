@@ -4,6 +4,7 @@ import {Link} from 'react-router-dom';
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import img from "../../assets/images/layout/contact.jpg";
 
 
 
@@ -15,37 +16,6 @@ Coinlist01.propTypes = {
 function Coinlist01(props) {
 
     const {dataCoin} = props;
-
-    const [dataCoinTab] = useState([
-        {
-            id: 1,
-            title: 'View All',
-        },
-        {
-            id: 2,
-            title: 'Metaverse',
-        },
-        {
-            id: 3,
-            title: 'Entertainment',
-        },
-        {
-            id: 4,
-            title: 'Energy',
-        },
-        {
-            id: 5,
-            title: 'NFT',
-        },
-        {
-            id: 6,
-            title: 'Gaming',
-        },
-        {
-            id: 7,
-            title: 'Music',
-        },
-    ]);
 
 
     return (
@@ -60,30 +30,20 @@ function Coinlist01(props) {
 
                     <div className="coin-list__main">
                     <Tabs>
-                        {/*}
-                            <TabList>
-                                {
-                                    dataCoinTab.map(idx => (
-                                        <Tab key={idx.id}>{idx.title}</Tab>
-                                    ))
-                                }
-
-                            </TabList>
-                        */}
-
                             {
                                 dataCoin.map(data => (
                                     <TabPanel key={data.id}>
                                         <div className="content-inner">
                                         <table className="table">
                                             <thead>
-                                                <tr>
-                                                    <th scope="col">Name</th>
-                                                    <th scope="col">Ticker</th>
-                                                    <th scope="col">Token ID</th>
-                                                    <th scope="col">Created By</th>
-                                                    <th scope="col"></th>
-                                                </tr>
+                                            <tr>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Image</th>
+                                                <th scope="col">Ticker</th>
+                                                <th scope="col">Token ID</th>
+                                                <th scope="col">Created By</th>
+                                                <th scope="col"></th>
+                                            </tr>
                                             </thead>
                                             <tbody>
 
@@ -93,12 +53,34 @@ function Coinlist01(props) {
                                                             <td>
                                                                 <Link to={`/token?token-id=${idx.tokenId}`}>
                                                                     {/*<img src={idx.icon} alt="rockie" />*/}
-                                                                <span>{idx.name}</span></Link>
+                                                                    <span>{idx.name}</span></Link>
+                                                            </td>
+                                                            <td className={`${idx.class}`}>
+                                                                {idx.image ?
+                                                                    <img className="token_image_detail"
+                                                                         src={`${process.env.REACT_APP_BACKEND_URL}${idx.image.replace(/\\/g, '/')}`}
+                                                                         style={{
+                                                                             width: '48px',
+                                                                             height: '48px'
+                                                                         }}
+                                                                         alt={idx.name}
+                                                                    /> :
+                                                                    <img className="token_image_detail"
+                                                                         src={`${process.env.REACT_APP_BACKEND_URL}${'/uploads/hedera-hashgraph.png'}`}
+                                                                         style={{
+                                                                             width: '48px',
+                                                                             height: '48px'
+                                                                         }}
+                                                                         alt={idx.name}
+                                                                    />
+                                                                }
+
                                                             </td>
                                                             <td className={`${idx.class}`}>{idx.ticker}</td>
                                                             <td className="token_id">{idx.tokenId}</td>
                                                             <td className="created_by">{idx.walletAddress}</td>
-                                                            <td><Link to={ `/token?token-id=${idx.tokenId}`} className="btn">Trade</Link></td>
+                                                            <td><Link to={`/token?token-id=${idx.tokenId}`}
+                                                                      className="btn">Trade</Link></td>
                                                         </tr>
                                                     ))
                                                 }

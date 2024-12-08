@@ -25,8 +25,29 @@ model Token {
   bondingCurveSupply String?  @map("bonding_curve_supply")
   bondingCurveHbar   String?  @map("bonding_curve_hbar")
   liquidityPoolLink  String?  @map("liquidity_pool_link")
+  image              String?  @map("image") // Optional field for the image path
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("tokens")
+}
+
+model Threads {
+  id         Int       @id @default(autoincrement())
+  token_id   String
+  title      String
+  content    String
+  author     String
+  created_at DateTime  @default(now())
+  replies    Replies[]
+}
+
+model Replies {
+  id         Int      @id @default(autoincrement())
+  thread_id  Int
+  content    String
+  author     String
+  created_at DateTime @default(now())
+
+  threads Threads @relation(fields: [thread_id], references: [id])
 }

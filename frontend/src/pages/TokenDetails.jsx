@@ -227,8 +227,6 @@ function TokenDetails(props) {
         }
     }
 
-
-
     return (
         <>
             { tokenDetails ? <div>
@@ -236,16 +234,39 @@ function TokenDetails(props) {
 
                     <section className="contact">
                         <div className="container">
+
+                            {/* Token Details */}
                             <div className="row">
+
+                                {/* Token Name */}
                                 <div className="block-text center">
                                     <h3 className="heading">Token { tokenDetails?.name } - { tokenDetails?.tokenId }</h3>
+                                    {tokenDetails.image &&
+                                        <img className="token_image_detail"
+                                             src={`${process.env.REACT_APP_BACKEND_URL}${tokenDetails.image.replace(/\\/g, '/')}`}
+                                             style={{
+                                                 maxWidth: '50%',
+                                             }}
+                                             alt={tokenDetails.name}
+                                        />
+                                    }
                                     <hr/>
                                 </div>
 
-                                {/* Chart and Forum */}
+
                                 <div className="col-8">
-                                    <CandleStickChart />
-                                    <DiscussionForum />
+                                    {/* Chart */}
+                                    <CandleStickChart/>
+
+                                    {/* Details */}
+                                    { tokenDetails.description &&
+                                        <>
+                                            <h1 className="text-center text-white mb-4">Token Details</h1>
+                                            <p>
+                                                { tokenDetails.description }
+                                            </p>
+                                        </>
+                                    }
                                 </div>
 
                                 {/* Buy and Sell */}
@@ -468,11 +489,19 @@ function TokenDetails(props) {
 
                                 </div>
                             </div>
+
+                            {/* Discussion Forum */}
+                            <div className="row">
+                                <div className="col-md-8 col-xs-12">
+                                    <DiscussionForum tokenId={tokenDetails?.tokenId}/>
+                                </div>
+                            </div>
+
                         </div>
                     </section>
 
                 </div> :
-                <div style={{display: 'flex',  justifyContent:'center', alignItems:'center', height: '100vh'}}>
+                <div style={{display: 'flex', justifyContent: 'center', alignItems:'center', height: '100vh'}}>
                     <Spinner animation="grow" />
                 </div>
             }

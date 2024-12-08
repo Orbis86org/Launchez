@@ -68,18 +68,6 @@ function HomeOne(props) {
                 <Coinlist01 dataCoin={tokens} showHeading={ true } />
             )}
 
-            {/*
-            <Work01 data={dataWorkRowOne} data2={dataWorkRowTwo} showHeading={ true }/>
-
-            <About01 />
-
-            <Download01 />
-
-            <Testimonial01 data={dataTestimonial} />
-
-            <Sale01 />
-            */}
-
         </div>
     );
 }
