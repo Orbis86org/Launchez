@@ -14,6 +14,7 @@ const {sleep} = require("./saucerswap/utils/helpers");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 
 const PORT = process.env.PORT || 3080;
 
@@ -123,9 +124,10 @@ app.get("/api/tokens", async (req, res) => {
 /**
  * Update an Existing Token in DB
  */
-app.put("/api/tokens", async (req, res) => {
+app.put("/api/tokens", upload.single('image'), async (req, res) => {
 	try{
 		let data = req.body;
+		const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
 		let token_id = data.token_id;
 
@@ -333,6 +335,21 @@ app.get("/api/liquidity/tokens", async (req, res) => {
 /**
  * Start The Server
  */
+/*
+let certificate = fs.readFileSync(path.join(__dirname, '..', '..', 'crt', 'server.crt'), 'utf8');
+
+let privateKey = fs.readFileSync(path.join(__dirname, '..', '..', 'crt', 'server.key'), 'utf8');
+
+
+https.createServer({
+	key: privateKey,
+	cert: certificate
+}, app).listen( PORT, () => {
+	console.log(`Server listening on ${PORT}`);
+} );
+ */
+
+
 app.listen(PORT, () => {
 	console.log(`Server listening on ${PORT}`);
 });

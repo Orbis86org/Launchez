@@ -101,7 +101,7 @@ class TokenService {
             const backendUrl = process.env.REACT_APP_BACKEND_URL;
             const response = await fetch(`${backendUrl}/api/tokens`, {
                 method: method,
-                body: formData,
+                body: method === 'GET' || method === 'HEAD' ? null : formData, // Only include body for allowed methods
                 redirect: "follow",
             });
             const result = await response.json();

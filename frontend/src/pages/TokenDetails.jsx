@@ -109,7 +109,7 @@ function TokenDetails(props) {
     }, []);
 
     const bondingCurve = new BondingCurve(
-        72000000000000000,
+        process.env.REACT_APP_HEDERA_TOKEN_INITIAL_SUPPLY,
         process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY,
         Number( tokenDetails?.bondingCurveSupply ),
         57500000000000000,
@@ -138,14 +138,7 @@ function TokenDetails(props) {
     async function executeBuy(buyerAccountId, amountY, tokenId) {
         try {
             // Simulate the buy to get the amount of token X and check for max supply limits
-            let bonding_curve = new BondingCurve(
-                72000000000000000,
-                process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY,
-                Number( tokenDetails?.bondingCurveSupply ),
-                57500000000000000,
-                Number( tokenDetails?.bondingCurveHBAR )
-            );
-            const { finalPrice, amountX, slippage } = bonding_curve.simulateBuy(amountY);
+            const { finalPrice, amountX, slippage } = bondingCurve.simulateBuy(amountY);
 
             /*
              * Create a transaction to transfer Hbar (Y) from buyer to treasury, and transfer of token (X)
@@ -191,7 +184,6 @@ function TokenDetails(props) {
         try {
 
             const { finalPrice, amountY, slippage } = bondingCurve.simulateSell(amountX);
-
 
             // Create a transaction to transfer token X from seller to treasury, and Hbar (Y) from treasury to seller
             /*
@@ -245,7 +237,7 @@ function TokenDetails(props) {
                                         <img className="token_image_detail"
                                              src={`${process.env.REACT_APP_BACKEND_URL}${tokenDetails.image.replace(/\\/g, '/')}`}
                                              style={{
-                                                 maxWidth: '50%',
+                                                 maxWidth: '15%',
                                              }}
                                              alt={tokenDetails.name}
                                         />
@@ -318,7 +310,7 @@ function TokenDetails(props) {
                                                                 "bonding_curve_hbar": newHbar.toString()
                                                             };
 
-                                                            const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
+                                                            const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, null,'PUT' );
                                                             if( ! tokenUpdated ) {
                                                                 await new ToastsService().showErrorToast("An error has occurred. Please try again.");
 
@@ -365,7 +357,7 @@ function TokenDetails(props) {
                                                                         liquidityPoolLink: link,
                                                                     };
 
-                                                                    const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
+                                                                    const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, null, 'PUT' );
                                                                     if( ! tokenUpdated ) {
                                                                         return;
                                                                     }
@@ -374,6 +366,8 @@ function TokenDetails(props) {
                                                                 }
 
                                                             }
+
+                                                            window.location.reload();
 
 
                                                         }else {
@@ -432,7 +426,7 @@ function TokenDetails(props) {
                                                                "bonding_curve_hbar": newHbar.toString()
                                                            };
 
-                                                           const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, 'PUT' );
+                                                           const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, null, 'PUT' );
                                                            if( ! tokenUpdated ) {
                                                                await new ToastsService().showErrorToast("An error has occurred. Please try again.");
 
@@ -445,6 +439,8 @@ function TokenDetails(props) {
                                                            setTokenDetails( tokenUpdated );
 
                                                            await new ToastsService().showSuccessToast("Transaction Completed");
+
+                                                            window.location.reload();
 
                                                            /*=========================*/
 
