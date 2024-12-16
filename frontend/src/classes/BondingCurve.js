@@ -40,9 +40,9 @@ class BondingCurve {
      * Initializes with a fixed supply of 720 million tokens and 34,300 Hbar liquidity.
      */
     constructor() {
-        this.initialSupply = process.env.REACT_APP_HEDERA_TOKEN_INITIAL_SUPPLY; // Initial supply of token X (720 million tokens with 8 decimals) - Virtual Supply
-        this.totalSupply = process.env.REACT_APP_HEDERA_TOKEN_TOTAL_SUPPLY; // Total supply of token X (700 million tokens with 8 decimals)
-        this.maxSaleSupply = process.env.REACT_APP_HEDERA_TOKEN_MAX_SALE_SUPPLY; // Max tokens to sell normally (565 million tokens with 8 decimals)
+        this.initialSupply = 72000000000000000; // Initial supply of token X (720 million tokens with 8 decimals)
+        this.totalSupply = 70000000000000000; // Total supply of token X (700 million tokens with 8 decimals)
+        this.maxSaleSupply = 56500000000000000; // Max tokens to sell normally (565 million tokens with 8 decimals)
         this.maxSaleSupplyWithLastTrade = 57500000000000000; // Max tokens to sell in the last large trade (575 million tokens with 8 decimals)
         this.b = 34300; // Initial liquidity of token Y (Hbar)
         this.k = this.initialSupply * this.b; // Constant k = initial supply * initial liquidity

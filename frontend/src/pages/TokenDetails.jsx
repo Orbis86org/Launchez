@@ -185,6 +185,11 @@ function TokenDetails(props) {
 
             const { finalPrice, amountY, slippage } = bondingCurve.simulateSell(amountX);
 
+            console.log( 'Amount X (token amount): ', amountX )
+            console.log('Final Price: ', finalPrice )
+            console.log( 'Amount Y: ', amountY )
+            console.log( 'Slippage: ', slippage )
+
             // Create a transaction to transfer token X from seller to treasury, and Hbar (Y) from treasury to seller
             /*
               * Create a transaction to transfer token X from seller to treasury,
@@ -248,7 +253,7 @@ function TokenDetails(props) {
 
                                 <div className="col-8">
                                     {/* Chart */}
-                                    <CandleStickChart/>
+                                    <CandleStickChart tokenDetails={ tokenDetails }/>
 
                                     {/* Details */}
                                     { tokenDetails.description &&
