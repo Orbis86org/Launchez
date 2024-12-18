@@ -162,6 +162,40 @@ app.put("/api/tokens", upload.single('image'), async (req, res) => {
 });
 
 /**
+ * Get All Tokens of specific profile
+ */
+app.get("/api/profile", async (req, res) => {
+    try{
+        let profile_id = req.query.profile_id;
+		const prisma = new PrismaClient();
+		if( profile_id ){
+			let token = await prisma.token.findMany({
+				where: {
+					walletAddress: profile_id,
+				},
+			})
+
+			if( token ){
+				return res.json({
+					success: true,
+					data: token
+				});
+			}
+		} else {
+			return res.json({
+				success: true,
+				data: []
+			});
+		}
+
+    } catch (error) {
+        console.log( error );
+
+        return res.json({ success: false });
+    }
+});
+
+/**
  * ==========================================================================
  * DISCUSSION ENDPOINTS
  * ==========================================================================

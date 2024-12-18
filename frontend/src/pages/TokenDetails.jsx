@@ -23,6 +23,7 @@ import {useWalletInterface} from "../services/wallets/useWalletInterface";
 import {TransactionService} from "../services/transactions/transactionService";
 import TokenService from "../services/tokens/tokenService";
 import ToastsService from "../services/toasts/toastsService";
+import LineChart from '../components/LineChart';
 
 
 TokenDetails.propTypes = {
@@ -248,7 +249,8 @@ function TokenDetails(props) {
 
                                 <div className="col-8">
                                     {/* Chart */}
-                                    <CandleStickChart/>
+                                    {/* <CandleStickChart/> */}
+                                    <LineChart />
 
                                     {/* Details */}
                                     { tokenDetails.description &&
