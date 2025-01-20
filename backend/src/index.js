@@ -96,6 +96,9 @@ app.get("/api/tokens", async (req, res) => {
 				where: {
 					tokenId: token_id,
 				},
+				include: {
+					Trades: true
+				}
 			})
 
 			if( token ){
@@ -154,6 +157,80 @@ app.put("/api/tokens", upload.single('image'), async (req, res) => {
 
 		return res.json({ success: false });
 
+	} catch (error) {
+		console.log( error );
+
+		return res.json({ success: false });
+	}
+});
+
+/**
+ * Get All Tokens of specific profile
+ */
+app.get("/api/profile", async (req, res) => {
+    try{
+        let profile_id = req.query.profile_id;
+		const prisma = new PrismaClient();
+		if( profile_id ){
+			let token = await prisma.token.findMany({
+				where: {
+					walletAddress: profile_id,
+				},
+			})
+
+			if( token ){
+				return res.json({
+					success: true,
+					data: token
+				});
+			}
+		} else {
+			return res.json({
+				success: true,
+				data: []
+			});
+		}
+
+    } catch (error) {
+        console.log( error );
+
+        return res.json({ success: false });
+    }
+});
+
+/**
+ * ==========================================================================
+ * TOKEN TRADES ENDPOINTS
+ * ==========================================================================
+ */
+app.post('/api/token/:tokenId/trades', async (req, res) => {
+	try{
+		const { tokenId } = req.params;
+
+		let data = req.body;
+
+		const prisma = new PrismaClient();
+
+		const token = await prisma.token.findUnique({
+			where: {
+				tokenId: tokenId,
+			}
+		})
+
+		if( ! token ){
+			return res.json({ success: false });
+		}
+
+		let trade = await prisma.trade.create({
+			data: {
+				tokenId: token.id,
+				amount: data.amount,
+				walletAddress: data.wallet_address,
+				type: data.type, // buy or sell
+			},
+		});
+
+		return res.json({ success: true, data: trade });
 	} catch (error) {
 		console.log( error );
 

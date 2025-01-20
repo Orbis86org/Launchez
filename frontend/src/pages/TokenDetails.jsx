@@ -11,7 +11,7 @@ import DiscussionForum from "../components/DiscussionForum";
 import CandleStickChart from "../components/CandleStickChart";
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import {Button, ProgressBar, Spinner} from "react-bootstrap";
+import {Button, Nav, ProgressBar, Spinner} from "react-bootstrap";
 import {AccountId, Hbar, PrivateKey, TransactionReceiptQuery, TransferTransaction} from "@hashgraph/sdk";
 import BondingCurve from "../classes/BondingCurve";
 import TradeExecutor from "../classes/TradeExecutor";
@@ -23,6 +23,9 @@ import {useWalletInterface} from "../services/wallets/useWalletInterface";
 import {TransactionService} from "../services/transactions/transactionService";
 import TokenService from "../services/tokens/tokenService";
 import ToastsService from "../services/toasts/toastsService";
+import TradingChart from '../components/TradingChart';
+import TopHolders from "../components/top-holders/TopHolders";
+import TradeHistory from "../components/trade-history/TradeHistory";
 
 
 TokenDetails.propTypes = {
@@ -185,11 +188,6 @@ function TokenDetails(props) {
 
             const { finalPrice, amountY, slippage } = bondingCurve.simulateSell(amountX);
 
-            console.log( 'Amount X (token amount): ', amountX )
-            console.log('Final Price: ', finalPrice )
-            console.log( 'Amount Y: ', amountY )
-            console.log( 'Slippage: ', slippage )
-
             // Create a transaction to transfer token X from seller to treasury, and Hbar (Y) from treasury to seller
             /*
               * Create a transaction to transfer token X from seller to treasury,
@@ -237,7 +235,7 @@ function TokenDetails(props) {
 
                                 {/* Token Name */}
                                 <div className="block-text center">
-                                    <h3 className="heading">Token { tokenDetails?.name } - { tokenDetails?.tokenId }</h3>
+                                    <h3 className="heading">Token {tokenDetails?.name} - {tokenDetails?.tokenId}</h3>
                                     {tokenDetails.image &&
                                         <img className="token_image_detail"
                                              src={`${process.env.REACT_APP_BACKEND_URL}${tokenDetails.image.replace(/\\/g, '/')}`}
@@ -253,17 +251,38 @@ function TokenDetails(props) {
 
                                 <div className="col-8">
                                     {/* Chart */}
-                                    <CandleStickChart tokenDetails={ tokenDetails }/>
+                                    {/* <CandleStickChart/> */}
+                                    <TradingChart/>
 
                                     {/* Details */}
-                                    { tokenDetails.description &&
+                                    {tokenDetails.description &&
                                         <>
-                                            <h1 className="text-center text-white mb-4">Token Details</h1>
+                                            <h1 className="text-center  mb-4">Token Details</h1>
                                             <p>
-                                                { tokenDetails.description }
+                                                {tokenDetails.description}
                                             </p>
                                         </>
                                     }
+
+                                    {/* Discussion Forum, Trade History & Top Holders */}
+                                    <Tabs defaultActiveKey={1} className="mt-48">
+                                        <Tab eventKey={1} title="Discussion Forum">
+                                            {/* Discussion Forum */}
+                                            <div className="row">
+                                                <div className="col-12">
+                                                    <DiscussionForum tokenId={tokenDetails?.tokenId}/>
+                                                </div>
+                                            </div>
+                                        </Tab>
+                                        <Tab eventKey={2} title="Trade History">
+                                            <TradeHistory trades={ tokenDetails?.Trades } />
+                                        </Tab>
+
+                                        <Tab eventKey={3} title="Top Holders">
+                                            <TopHolders tokenId={tokenDetails?.tokenId}/>
+                                        </Tab>
+                                    </Tabs>
+
                                 </div>
 
                                 {/* Buy and Sell */}
@@ -277,14 +296,15 @@ function TokenDetails(props) {
                                         <Tab eventKey="buy" title="Buy">
                                             <form id='token-buy-form'>
                                                 <InputGroup className="mb-3">
-                                                    <InputGroup.Text id="basic-addon1">{`Buy ${ tokenDetails?.ticker } worth `}</InputGroup.Text>
+                                                    <InputGroup.Text
+                                                        id="basic-addon1">{`Buy ${tokenDetails?.ticker} worth `}</InputGroup.Text>
                                                     <Form.Control
-                                                        placeholder={ `HBAR Amount` }
-                                                        aria-label={ `HBAR Amount` }
+                                                        placeholder={`HBAR Amount`}
+                                                        aria-label={`HBAR Amount`}
                                                         aria-describedby="basic-addon2"
                                                         name='buy_amount'
-                                                        onChange={ function( e ){
-                                                            setBuyAmount( e.target.value );
+                                                        onChange={function (e) {
+                                                            setBuyAmount(e.target.value);
                                                         }}
                                                     />
                                                     <InputGroup.Text id="basic-addon2">HBAR</InputGroup.Text>
@@ -293,19 +313,19 @@ function TokenDetails(props) {
                                                 <Button
                                                     type="submit"
                                                     className="btn-action"
-                                                    disabled={ ! accountId }
-                                                    onClick={ async function(e){
+                                                    disabled={!accountId}
+                                                    onClick={async function (e) {
                                                         e.preventDefault();
 
-                                                        let success = await executeBuy( accountId, buyAmount, tokenDetails?.tokenId );
-                                                        if( success && success?.amountX ){
+                                                        let success = await executeBuy(accountId, buyAmount, tokenDetails?.tokenId);
+                                                        if (success && success?.amountX) {
 
                                                             // Update Db
-                                                            let newSupply = Number( tokenDetails?.bondingCurveSupply ) - success?.amountX;
-                                                            let newHbar = Number( tokenDetails?.bondingCurveHbar ) + Number( buyAmount );
+                                                            let newSupply = Number(tokenDetails?.bondingCurveSupply) - success?.amountX;
+                                                            let newHbar = Number(tokenDetails?.bondingCurveHbar) + Number(buyAmount);
 
                                                             const tokenService = await new TokenService(
-                                                                AccountId.fromString( accountId ),
+                                                                AccountId.fromString(accountId),
                                                                 walletInterface
                                                             );
 
@@ -315,18 +335,22 @@ function TokenDetails(props) {
                                                                 "bonding_curve_hbar": newHbar.toString()
                                                             };
 
-                                                            const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, null,'PUT' );
-                                                            if( ! tokenUpdated ) {
+                                                            const tokenUpdated = await tokenService.saveTokenDetailsInDb(raw, null, 'PUT');
+
+                                                            // Create a buy trade
+                                                            const tokenTradeCreated = await tokenService.createTrade( tokenDetails?.tokenId, 'buy', success?.amountX )
+
+                                                            if (!tokenUpdated || ! tokenTradeCreated ) {
                                                                 await new ToastsService().showErrorToast("An error has occurred. Please try again.");
 
                                                                 return;
                                                             }
 
-                                                            let progressValue = ( Number( tokenUpdated?.bondingCurveSupply ) / bondingCurve?.maxSaleSupply  );
-                                                            const percentageSold = (1 - progressValue ) * 100;
+                                                            let progressValue = (Number(tokenUpdated?.bondingCurveSupply) / bondingCurve?.maxSaleSupply);
+                                                            const percentageSold = (1 - progressValue) * 100;
 
-                                                            setProgressBarValue( percentageSold );
-                                                            setTokenDetails( tokenUpdated );
+                                                            setProgressBarValue(percentageSold);
+                                                            setTokenDetails(tokenUpdated);
 
 
                                                             await new ToastsService().showSuccessToast("Transaction Completed");
@@ -339,20 +363,20 @@ function TokenDetails(props) {
                                                              */
 
                                                             // Check if it is more than 80% that has been 'sold' or 'supplied' to the public
-                                                            console.log("Percentage Sold: ", percentageSold )
-                                                            if( percentageSold >= 80 ) {
+                                                            console.log("Percentage Sold: ", percentageSold)
+                                                            if (percentageSold >= 80) {
                                                                 const liquidityPoolCreated = await tokenService.createLiquidityPool({
                                                                     token_id: tokenUpdated?.tokenId,
                                                                     token_desired: bondingCurve?.totalSupply - bondingCurve?.maxSaleSupply, // 700 million less 565 million = 135 million
                                                                     token_min: bondingCurve?.totalSupply - newSupply, // Actual remaining - Less than 135 million
                                                                 });
 
-                                                                console.log('Liquidity Pool Created: ', liquidityPoolCreated )
-                                                                if( liquidityPoolCreated ) {
+                                                                console.log('Liquidity Pool Created: ', liquidityPoolCreated)
+                                                                if (liquidityPoolCreated) {
 
                                                                     // Get Liquidity Pool link
-                                                                    const link = tokenService.getLiquidityPoolLink( tokenUpdated?.tokenId );
-                                                                    if( ! link ){
+                                                                    const link = tokenService.getLiquidityPoolLink(tokenUpdated?.tokenId);
+                                                                    if (!link) {
                                                                         return;
                                                                     }
 
@@ -362,8 +386,8 @@ function TokenDetails(props) {
                                                                         liquidityPoolLink: link,
                                                                     };
 
-                                                                    const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, null, 'PUT' );
-                                                                    if( ! tokenUpdated ) {
+                                                                    const tokenUpdated = await tokenService.saveTokenDetailsInDb(raw, null, 'PUT');
+                                                                    if (!tokenUpdated) {
                                                                         return;
                                                                     }
 
@@ -375,13 +399,13 @@ function TokenDetails(props) {
                                                             window.location.reload();
 
 
-                                                        }else {
+                                                        } else {
                                                             await new ToastsService().showErrorToast("Transaction Canceled");
 
                                                         }
                                                     }}
                                                 >
-                                                    { accountId ? 'Place Trade' : 'Connect Wallet to Proceed'}
+                                                    {accountId ? 'Place Trade' : 'Connect Wallet to Proceed'}
                                                 </Button>
 
                                             </form>
@@ -393,68 +417,72 @@ function TokenDetails(props) {
                                                 <InputGroup className="mb-3">
                                                     <InputGroup.Text id="basic-addon1">Sell</InputGroup.Text>
                                                     <Form.Control
-                                                        placeholder={ `Amount` }
-                                                        aria-label={ `Amount` }
+                                                        placeholder={`Amount`}
+                                                        aria-label={`Amount`}
                                                         aria-describedby="basic-addon2"
                                                         name='sell_amount'
-                                                        onChange={ function( e ){
-                                                            setSellAmount( e.target.value );
+                                                        onChange={function (e) {
+                                                            setSellAmount(e.target.value);
                                                         }}
                                                     />
-                                                    <InputGroup.Text id="basic-addon2">{ tokenDetails?.ticker }</InputGroup.Text>
+                                                    <InputGroup.Text
+                                                        id="basic-addon2">{tokenDetails?.ticker}</InputGroup.Text>
                                                 </InputGroup>
 
                                                 <Button
                                                     type="submit"
                                                     className="btn-action"
-                                                    disabled={ ! accountId }
-                                                    onClick={ async function(e){
+                                                    disabled={!accountId}
+                                                    onClick={async function (e) {
                                                         e.preventDefault();
 
                                                         // Account for decimals in token transfer
-                                                        const tokenSellAmount = sellAmount * Math.pow( 10, 8 );
+                                                        const tokenSellAmount = sellAmount * Math.pow(10, 8);
 
-                                                        let success = await executeSell( accountId, tokenSellAmount, tokenDetails?.tokenId );
-                                                        if( success && success?.amountY ){
-                                                           // Update Db
-                                                           let newSupply = Number( tokenDetails?.bondingCurveSupply ) + Number( tokenSellAmount );
-                                                           let newHbar = Number( tokenDetails?.bondingCurveHbar ) - Number( success?.amountY );
+                                                        let success = await executeSell(accountId, tokenSellAmount, tokenDetails?.tokenId);
+                                                        if (success && success?.amountY) {
+                                                            // Update Db
+                                                            let newSupply = Number(tokenDetails?.bondingCurveSupply) + Number(tokenSellAmount);
+                                                            let newHbar = Number(tokenDetails?.bondingCurveHbar) - Number(success?.amountY);
 
-                                                           const tokenService = await new TokenService(
-                                                               AccountId.fromString( accountId ),
-                                                               walletInterface
-                                                           );
+                                                            const tokenService = await new TokenService(
+                                                                AccountId.fromString(accountId),
+                                                                walletInterface
+                                                            );
 
-                                                           const raw = {
-                                                               "token_id": tokenDetails?.tokenId,
-                                                               "bonding_curve_supply": newSupply.toString(),
-                                                               "bonding_curve_hbar": newHbar.toString()
-                                                           };
+                                                            const raw = {
+                                                                "token_id": tokenDetails?.tokenId,
+                                                                "bonding_curve_supply": newSupply.toString(),
+                                                                "bonding_curve_hbar": newHbar.toString()
+                                                            };
 
-                                                           const tokenUpdated = await tokenService.saveTokenDetailsInDb( raw, null, 'PUT' );
-                                                           if( ! tokenUpdated ) {
-                                                               await new ToastsService().showErrorToast("An error has occurred. Please try again.");
+                                                            const tokenUpdated = await tokenService.saveTokenDetailsInDb(raw, null, 'PUT');
 
-                                                               return;
-                                                           }
+                                                            // Create a sell trade
+                                                            const tokenTradeCreated = await tokenService.createTrade( tokenDetails?.tokenId, 'sell', tokenSellAmount )
+                                                            if (!tokenUpdated || ! tokenTradeCreated) {
+                                                                await new ToastsService().showErrorToast("An error has occurred. Please try again.");
 
-                                                           let progressValue = ( Number( tokenUpdated?.bondingCurveSupply ) / bondingCurve?.maxSaleSupply  );
+                                                                return;
+                                                            }
 
-                                                           setProgressBarValue( (1 - progressValue ) * 100 );
-                                                           setTokenDetails( tokenUpdated );
+                                                            let progressValue = (Number(tokenUpdated?.bondingCurveSupply) / bondingCurve?.maxSaleSupply);
 
-                                                           await new ToastsService().showSuccessToast("Transaction Completed");
+                                                            setProgressBarValue((1 - progressValue) * 100);
+                                                            setTokenDetails(tokenUpdated);
+
+                                                            await new ToastsService().showSuccessToast("Transaction Completed");
 
                                                             window.location.reload();
 
-                                                           /*=========================*/
+                                                            /*=========================*/
 
                                                         } else {
                                                             await new ToastsService().showErrorToast('Transaction Canceled');
                                                         }
                                                     }}
                                                 >
-                                                    { accountId ? 'Place Trade' : 'Connect Wallet to Proceed'}
+                                                    {accountId ? 'Place Trade' : 'Connect Wallet to Proceed'}
                                                 </Button>
 
                                             </form>
@@ -464,46 +492,63 @@ function TokenDetails(props) {
                                     {/* Bonding Curve Progress */}
                                     <div className="pt-4">
                                         <h6>Bonding Curve Progress</h6>
-                                        <ProgressBar now={ (progressBarValue ).toLocaleString('en-US', { minimumFractionDigits: 2 } ) } animated label={ `${ ( progressBarValue ).toLocaleString('en-US', { minimumFractionDigits: 2 } ) } %` } min={ 30 }/>
+                                        <ProgressBar
+                                            now={(progressBarValue).toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                            animated
+                                            label={`${(progressBarValue).toLocaleString('en-US', {minimumFractionDigits: 2})} %`}
+                                            min={30}
+                                            style={{
+                                                height: "40px"
+                                            }}
+                                        />
 
-                                        <div style={{ marginTop: '20px'}}>
+                                        <div style={{marginTop: '20px'}}>
                                             <strong>Bonding Curve Values: </strong>
 
-                                            <div style={{ marginTop: '5px'}}>
-                                                <strong>Token Supply:</strong> { Number( tokenDetails?.bondingCurveSupply / Math.pow( 10, 8) ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
+                                            <div style={{marginTop: '5px'}}>
+                                                <strong>Token
+                                                    Supply:</strong> {Number(tokenDetails?.bondingCurveSupply / Math.pow(10, 8)).toLocaleString('en-US', {minimumFractionDigits: 0})}
                                                 <br/>
-                                                <strong>HBAR:</strong> { Number( tokenDetails?.bondingCurveHbar ).toLocaleString('en-US', { minimumFractionDigits: 0 } )}
+                                                <strong>HBAR:</strong> {Number(tokenDetails?.bondingCurveHbar).toLocaleString('en-US', {minimumFractionDigits: 0})}
                                             </div>
                                         </div>
-
 
 
                                     </div>
 
                                     <div className={"pt-4"}>
                                         <h6>Follow Us</h6>
-                                        <SocialIcon url="https://twitter.com" />
-                                        <SocialIcon url="https://www.github.com" />
-                                        <SocialIcon url="https://facebook.com" />
-                                        <SocialIcon url="https://telegram.org" />
+                                        <SocialIcon url="https://twitter.com"  className="m-2" style={{
+                                            width: '32px',
+                                            height: '32px',
+                                        }}/>
+                                        <SocialIcon url="https://www.github.com" className="m-2" style={{
+                                            width: '32px',
+                                            height: '32px',
+                                        }}/>
+                                        <SocialIcon url="https://facebook.com" className="m-2" style={{
+                                            width: '32px',
+                                            height: '32px',
+                                        }}/>
+                                        <SocialIcon url="https://telegram.org" className="m-2" style={{
+                                            width: '32px',
+                                            height: '32px',
+                                        }}/>
                                     </div>
 
                                 </div>
                             </div>
 
-                            {/* Discussion Forum */}
-                            <div className="row">
-                                <div className="col-md-8 col-xs-12">
-                                    <DiscussionForum tokenId={tokenDetails?.tokenId}/>
-                                </div>
-                            </div>
+
+
+
 
                         </div>
                     </section>
 
                 </div> :
-                <div style={{display: 'flex', justifyContent: 'center', alignItems:'center', height: '100vh'}}>
-                    <Spinner animation="grow" />
+                <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+                    <Spinner animation="grow"/>
                 </div>
             }
         </>

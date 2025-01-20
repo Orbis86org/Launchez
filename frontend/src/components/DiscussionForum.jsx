@@ -190,10 +190,10 @@ function DiscussionForum({ tokenId }) {
         <Container fluid className="p-4">
             <Row className="justify-content-center">
                 <Col md={12}>
-                    <h1 className="text-center text-white mb-4">Discussion Forum</h1>
+                    <h1 className="text-center  mb-4 d-none">Discussion Forum</h1>
                     <Form onSubmit={handleSubmitThread} className="mb-4">
                         <Form.Group controlId="formThreadTitle">
-                            <Form.Label className="text-white">Thread Title</Form.Label>
+                            <Form.Label className="">Thread Title</Form.Label>
                             <Form.Control
                                 type="text"
                                 name="title"
@@ -203,7 +203,7 @@ function DiscussionForum({ tokenId }) {
                             />
                         </Form.Group>
                         <Form.Group controlId="formThreadContent">
-                            <Form.Label className="text-white">Content</Form.Label>
+                            <Form.Label className="">Content</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}

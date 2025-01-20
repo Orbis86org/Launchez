@@ -189,7 +189,7 @@ function Footer(props) {
             <div className="container-fluid">
                 <div className="footer__bottom">
                 <p>
-                    ©2024 Launchez
+                    ©{new Date().getFullYear()} Launchez
                 </p>
                 </div>
             </div>

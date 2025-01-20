@@ -78,7 +78,11 @@ function Coinlist01(props) {
                                                             </td>
                                                             <td className={`${idx.class}`}>{idx.ticker}</td>
                                                             <td className="token_id">{idx.tokenId}</td>
-                                                            <td className="created_by">{idx.walletAddress}</td>
+                                                            <td className="created_by">
+                                                                <Link to={`/profile/${idx.walletAddress}`}>
+                                                                    {idx.walletAddress}
+                                                                </Link>
+                                                            </td>
                                                             <td><Link to={`/token?token-id=${idx.tokenId}`}
                                                                       className="btn">Trade</Link></td>
                                                         </tr>
@@ -98,7 +102,7 @@ function Coinlist01(props) {
                 </div>
                 </div>
             </div>
-            </section>
+        </section>
     );
 }
 

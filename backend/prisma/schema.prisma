@@ -28,6 +28,7 @@ model Token {
   image              String?  @map("image") // Optional field for the image path
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
+  Trades             Trade[]
 
   @@map("tokens")
 }
@@ -50,4 +51,18 @@ model Replies {
   created_at DateTime @default(now())
 
   threads Threads @relation(fields: [thread_id], references: [id])
+}
+
+model Trade {
+  id            Int      @id @default(autoincrement())
+  tokenId       Int      @map("token_id")
+  walletAddress String?  @map("wallet_address")
+  type          String? // E.g. buy, sell
+  amount        String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  token Token @relation(fields: [tokenId], references: [id])
+
+  @@map("trades")
 }

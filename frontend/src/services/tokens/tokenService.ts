@@ -141,11 +141,7 @@ class TokenService {
             const response = await fetch(`${backendUrl}/api/liquidity/create`, requestOptions);
             const result = await response.json();
 
-            if (result?.success) {
-                return true;
-            } else {
-                return false;
-            }
+            return !!result?.success;
         } catch (error) {
             console.error("Error saving token data:", error);
 
@@ -215,7 +211,39 @@ class TokenService {
         }
     }
 
+    /**
+     * Create Token Trade
+     *
+     * @param tokenId
+     * @param type // E.g. buy, sell
+     * @param amount
+     */
+    async createTrade( tokenId: string, type: string, amount: number ) : Promise<boolean|Object> {
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                amount: amount.toString(),
+                wallet_address: this.accountId.toString(),
+                type: type
+            }),
+            redirect: "follow",
+        };
 
+        try {
+            const backendUrl = process.env.REACT_APP_BACKEND_URL;
+            const response = await fetch(`${backendUrl}/api/token/${tokenId}/trades`, requestOptions);
+            const result = await response.json();
+
+            return !!result?.success;
+        } catch (error) {
+            console.error("Error saving token data:", error);
+
+            return false;
+        }
+    }
 }
 
 export default TokenService;
