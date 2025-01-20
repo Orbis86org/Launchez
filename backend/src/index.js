@@ -196,6 +196,121 @@ app.get("/api/profile", async (req, res) => {
 });
 
 /**
+ * Get details of specific profile
+ */
+app.get("/api/profile-details", async (req, res) => {
+    try{
+        let profile_id = req.query.profile_id;
+		const prisma = new PrismaClient();
+
+		// Prisma middleware to log all queries
+		prisma.$use(async (params, next) => {
+			const result = await next(params); // Proceed to execute the query
+			return result;
+		});
+
+		if( profile_id ){
+			let profileData = await prisma.profile.findFirst({
+				where: {
+					walletAddress: profile_id,
+				},
+			})
+			if( profileData ){
+				return res.json({
+					success: true,
+					message: "Profile found.",
+					data: profileData
+				});
+			} else {
+                return res.json({
+                    success: false,
+                    message: "Profile not found.",
+					data: []
+                });
+            }
+		} else {
+			return res.json({
+				success: true,
+				message: "Something went wrong.",
+				data: []
+			});
+		}
+
+    } catch (error) {
+        console.log( error );
+
+        return res.json({ success: false });
+    }
+});
+
+
+/**
+ * Create or Update profile
+ */
+app.post("/api/user-profile", upload.single('image'), async (req, res) => {
+	const { nickname, email, bio, twitter, facebook, walletAddress } = req.body;
+	const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+	const prisma = new PrismaClient();
+	try {
+  
+	  // If no profile_id, create a new profile
+	  const newProfile = await prisma.profile.create({
+		data: {
+		  nickname,
+		  email,
+		  bio,
+		  twitter,
+		  facebook,
+		  walletAddress: walletAddress[0],
+		  image: imagePath,
+		},
+	  });
+  
+	  return res.json({ success: true, data: newProfile });
+  
+	} catch (error) {
+	  console.log(error);
+	  return res.json({ success: false });
+	}
+  });
+
+  app.put("/api/user-profile", upload.single('image'), async (req, res) => {
+	try {
+		const prisma = new PrismaClient();
+		const { walletAddress, nickname, email, bio, twitter, facebook } = req.body;
+		console.log(walletAddress, typeof walletAddress);
+		const existingProfile = await prisma.profile.findUnique({
+		  where: { walletAddress: walletAddress[0] }, // Find the profile by walletAddress
+		});
+	
+		// If no profile exists, return an error
+		if (!existingProfile) {
+		  return res.status(404).json({ success: false, message: "Profile not found" });
+		}
+	
+		// If no new image is uploaded, use the existing image from the profile
+		const imagePath = req.file ? `/uploads/${req.file.filename}` : existingProfile.image;
+	
+		const updatedProfile = await prisma.profile.update({
+		  where: { walletAddress: walletAddress[0] }, // Identify the profile by walletAddress
+		  data: {
+			nickname,
+			email,
+			bio,
+			twitter,
+			facebook,
+			image: imagePath, // Only update the image if a new one is provided
+		  },
+		});
+	
+		return res.json({ success: true, data: updatedProfile });
+	  } catch (error) {
+		console.error(error);
+		return res.json({ success: false, message: error.message });
+	  }
+  });
+
+/**
  * ==========================================================================
  * DISCUSSION ENDPOINTS
  * ==========================================================================

@@ -51,3 +51,18 @@ model Replies {
 
   threads Threads @relation(fields: [thread_id], references: [id])
 }
+
+model Profile {
+  id                 Int      @id @default(autoincrement())
+  nickname               String?  @map("nickname")
+  email            String?  @map("email")
+  bio             String?  @map("bio")
+  twitter               String?  @map("twitter")
+  facebook        String?  @map("facebook")
+  walletAddress      String?  @unique @map("walletAddress")
+  image              String?  @map("image") // Optional field for the image path
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("profile")
+}

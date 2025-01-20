@@ -4276,6 +4276,13 @@
               border: 1px solid var(--line);
               color: var(--onsurface);
             }
+            textarea {
+              border-radius: 8px;
+              padding: 11px 20px;
+              background: var(--bg1);
+              border: 1px solid var(--line);
+              color: var(--onsurface);
+            }
             select {
               width: 50%;
               border-radius: 8px;
@@ -4643,5 +4650,4 @@
   .is_dark .buy-crypto .buy-crypto__main .main.details .status {
     background: #18191d;
   }
-  
-  
+
